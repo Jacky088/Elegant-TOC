@@ -451,7 +451,22 @@ class Elegant_TOC {
      */
     public function add_plugin_action_links($links) {
         $settings_link = '<a href="' . esc_url(admin_url('options-general.php?page=elegant-toc')) . '">' . __('设置', 'elegant-toc') . '</a>';
-        return array_merge(array('settings' => $settings_link), $links);
+
+        $ordered = array();
+        foreach ($links as $key => $value) {
+            $ordered[$key] = $value;
+            // 在「停用」之后插入「设置」
+            if ($key === 'deactivate') {
+                $ordered['settings'] = $settings_link;
+            }
+        }
+
+        // 兜底：若链接中没有停用入口，则放到末尾
+        if (!isset($ordered['settings'])) {
+            $ordered['settings'] = $settings_link;
+        }
+
+        return $ordered;
     }
 
     public function register_settings() {
