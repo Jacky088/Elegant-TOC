@@ -1,0 +1,336 @@
+(function () {
+    'use strict';
+
+    /* ---------- 辅助函数 ---------- */
+    function throttle(fn, limit) {
+        var last = 0;
+        return function () {
+            var now = Date.now();
+            if (now - last >= limit) {
+                last = now;
+                fn.apply(this, arguments);
+            }
+        };
+    }
+
+    function debounce(fn, wait) {
+        var t = null;
+        return function () {
+            var ctx = this, args = arguments;
+            if (t) clearTimeout(t);
+            t = setTimeout(function () { fn.apply(ctx, args); }, wait);
+        };
+    }
+
+    function logDebug(message) {
+        if (window.console && window.console.log) {
+            console.log('[Elegant TOC]', message);
+        }
+    }
+
+    /* ---------- 折叠/展开 ---------- */
+    function initToggle(toc) {
+        var panel = toc.querySelector('.elegant-toc-panel');
+        if (!panel) return;
+        var toggle = panel.querySelector('.elegant-toc-toggle');
+        if (!toggle) return;
+
+        toggle.addEventListener('click', function () {
+            var isCollapsed = toc.classList.contains('collapsed');
+            if (isCollapsed) {
+                toc.classList.remove('collapsed');
+                toggle.setAttribute('aria-expanded', 'true');
+            } else {
+                toc.classList.add('collapsed');
+                toggle.setAttribute('aria-expanded', 'false');
+            }
+        });
+    }
+
+    function initCollapseState(toc) {
+        var panel = toc.querySelector('.elegant-toc-panel');
+        if (!panel) return;
+        var toggle = panel.querySelector('.elegant-toc-toggle');
+        if (!toggle) return;
+
+        try {
+            var stored = window.localStorage.getItem('elegant_toc_collapsed');
+            if (stored === '1') {
+                toc.classList.add('collapsed');
+                toggle.setAttribute('aria-expanded', 'false');
+            }
+        } catch (e) {}
+
+        toc.addEventListener('classChanged' + Date.now(), function () {});
+        // 监听折叠状态变化并持久化
+        new MutationObserver(function (mutations) {
+            mutations.forEach(function (m) {
+                if (m.attributeName === 'class') {
+                    try {
+                        window.localStorage.setItem(
+                            'elegant_toc_collapsed',
+                            toc.classList.contains('collapsed') ? '1' : '0'
+                        );
+                    } catch (e) {}
+                }
+            });
+        }).observe(toc, { attributes: true, attributeFilter: ['class'] });
+    }
+
+    /* ---------- 平滑滚动 ---------- */
+    function getOffset() {
+        var offset = 100;
+        var adminbar = document.getElementById('wpadminbar');
+        var header = document.querySelector('.site-header, .site-header-inner, header[role="banner"], .sticky-header, #masthead');
+
+        if (adminbar) {
+            offset = Math.max(offset, adminbar.offsetHeight + 20);
+        }
+        if (header) {
+            var style = window.getComputedStyle(header);
+            var isStickyOrFixed = (style.position === 'fixed' || style.position === 'sticky');
+            if (isStickyOrFixed) {
+                offset = Math.max(offset, header.getBoundingClientRect().height + 20);
+            }
+        }
+
+        document.documentElement.style.setProperty('--et-scroll-offset', (offset / 16) + 'rem');
+        return offset;
+    }
+
+    function initSmoothScroll(toc) {
+        var panel = toc.querySelector('.elegant-toc-panel');
+        if (!panel) return;
+
+        panel.addEventListener('click', function (e) {
+            var link = e.target.closest('.elegant-toc-link');
+            if (!link) return;
+
+            var href = link.getAttribute('href');
+            if (!href || href.charAt(0) !== '#') return;
+
+            var id = href.slice(1);
+            var target = document.getElementById(id);
+            if (!target) return;
+
+            e.preventDefault();
+            var offset = getOffset();
+            var top = target.getBoundingClientRect().top + window.pageYOffset - offset;
+
+            window.scrollTo({
+                top: top,
+                behavior: 'smooth'
+            });
+
+            // 移动端点击链接后自动关闭面板
+            if (toc.classList.contains('elegant-toc--mobile-open')) {
+                closeMobilePanel(toc);
+            }
+
+            // 高亮闪烁目标
+            target.classList.add('elegant-toc-target-flash');
+            setTimeout(function () {
+                target.classList.remove('elegant-toc-target-flash');
+            }, 1000);
+        });
+    }
+
+    /* ---------- 滚动高亮 ---------- */
+    function initActiveHighlight(toc) {
+        var panel = toc.querySelector('.elegant-toc-panel');
+        if (!panel) return;
+        var links = panel.querySelectorAll('.elegant-toc-link');
+        if (!links.length) return;
+
+        var targets = [];
+        links.forEach(function (link) {
+            var id = link.getAttribute('href').slice(1);
+            var el = document.getElementById(id);
+            if (el) targets.push({ link: link, el: el });
+        });
+        if (!targets.length) return;
+
+        var offset = getOffset();
+
+        function updateActive() {
+            var scrollPos = window.pageYOffset + offset + 50;
+            var active = null;
+
+            for (var i = 0; i < targets.length; i++) {
+                var t = targets[i];
+                var top = t.el.getBoundingClientRect().top + window.pageYOffset;
+                if (top <= scrollPos) {
+                    active = t;
+                } else {
+                    break;
+                }
+            }
+
+            links.forEach(function (link) { link.classList.remove('active'); });
+            if (active) {
+                active.link.classList.add('active');
+                var list = panel.querySelector('.elegant-toc-list');
+                if (list) {
+                    var linkTop = active.link.offsetTop;
+                    var listHeight = list.clientHeight;
+                    var linkHeight = active.link.clientHeight;
+                    var scrollTop = list.scrollTop;
+                    if (linkTop < scrollTop) {
+                        list.scrollTop = linkTop - 10;
+                    } else if (linkTop + linkHeight > scrollTop + listHeight) {
+                        list.scrollTop = linkTop + linkHeight - listHeight + 10;
+                    }
+                }
+            }
+        }
+
+        window.addEventListener('scroll', throttle(updateActive, 80), { passive: true });
+        window.addEventListener('resize', debounce(updateActive, 150));
+        updateActive();
+    }
+
+    /* ---------- 移动端面板 ---------- */
+    function openMobilePanel(toc) {
+        toc.classList.add('elegant-toc--mobile-open');
+        var trigger = toc.querySelector('.elegant-toc-trigger');
+        if (trigger) trigger.setAttribute('aria-expanded', 'true');
+    }
+
+    function closeMobilePanel(toc) {
+        toc.classList.remove('elegant-toc--mobile-open');
+        var trigger = toc.querySelector('.elegant-toc-trigger');
+        if (trigger) trigger.setAttribute('aria-expanded', 'false');
+    }
+
+    function initMobilePanel(toc) {
+        var trigger = toc.querySelector('.elegant-toc-trigger');
+        var closeBtn = toc.querySelector('.elegant-toc-mobile-close');
+
+        if (trigger) {
+            trigger.addEventListener('click', function () {
+                openMobilePanel(toc);
+            });
+        }
+
+        if (closeBtn) {
+            closeBtn.addEventListener('click', function () {
+                closeMobilePanel(toc);
+            });
+        }
+
+        // 点击面板外部关闭
+        document.addEventListener('click', function (e) {
+            if (!toc.classList.contains('elegant-toc--mobile-open')) return;
+            if (!toc.contains(e.target)) {
+                closeMobilePanel(toc);
+            }
+        });
+    }
+
+    /* ---------- 桌面端侧边栏定位 ---------- */
+    function positionSidebar(toc) {
+        var contentContainer = toc.parentElement;
+        if (!contentContainer) return;
+
+        var minViewport = 1024;
+        var tocWidth = 240;
+        var gap = 24;
+        var minLeftSpace = 10;
+
+        // 小屏直接走移动端触发按钮模式
+        if (window.innerWidth < minViewport) {
+            logDebug('viewport too small: ' + window.innerWidth + ' < ' + minViewport);
+            resetSidebar(toc);
+            return;
+        }
+
+        // 以正文第一个实际内容元素为基准，判断正文左侧是否有足够空白
+        var refEl = toc.nextElementSibling || contentContainer;
+        if (!refEl) return;
+        var refRect = refEl.getBoundingClientRect();
+        var contentRect = contentContainer.getBoundingClientRect();
+        var availableLeft = refRect.left;
+
+        // 只要正文内容左侧能放下目录本身 + 间隙，就启用侧边栏
+        if (availableLeft < tocWidth + gap + minLeftSpace) {
+            logDebug('left space insufficient: ' + availableLeft + ' < ' + (tocWidth + gap + minLeftSpace));
+            resetSidebar(toc);
+            return;
+        }
+
+        getOffset(); // 确保 --et-scroll-offset 已设置
+        logDebug('activating sidebar, ref left: ' + availableLeft);
+
+        var headerOffset = getOffset();
+
+        // 目录顶部与正文第一个内容元素顶端对齐，并随滚动同步
+        var tocTop = Math.max(refRect.top, headerOffset + 20);
+        var tocLeft = Math.max(minLeftSpace, refRect.left - tocWidth - gap);
+
+        toc.classList.add('elegant-toc--sidebar');
+        toc.style.setProperty('--et-sidebar-top', tocTop + 'px');
+        toc.style.setProperty('--et-sidebar-left', tocLeft + 'px');
+
+        updateSidebarVisibility(toc, contentContainer);
+    }
+
+    function resetSidebar(toc) {
+        toc.classList.remove('elegant-toc--sidebar', 'elegant-toc--hidden');
+        toc.style.removeProperty('--et-sidebar-top');
+        toc.style.removeProperty('--et-sidebar-left');
+    }
+
+    function updateSidebarVisibility(toc, contentContainer) {
+        if (!toc.classList.contains('elegant-toc--sidebar')) return;
+        var refEl = toc.nextElementSibling || contentContainer;
+        if (!refEl) return;
+        var refRect = refEl.getBoundingClientRect();
+        var contentRect = contentContainer.getBoundingClientRect();
+        var inView = contentRect.bottom > 0 && contentRect.top < window.innerHeight;
+
+        // 滚动过程中同步目录顶部与正文可见区域顶端，保持"紧贴正文"
+        var headerOffset = getOffset();
+        var tocTop = Math.max(refRect.top, headerOffset + 20);
+        toc.style.setProperty('--et-sidebar-top', tocTop + 'px');
+
+        if (inView) {
+            toc.classList.remove('elegant-toc--hidden');
+        } else {
+            toc.classList.add('elegant-toc--hidden');
+        }
+    }
+
+    /* ---------- 启动 ---------- */
+    function boot() {
+        var toc = document.getElementById('elegant-toc');
+        if (!toc || toc.getAttribute('data-et-booted') === '1') return;
+        toc.setAttribute('data-et-booted', '1');
+
+        initMobilePanel(toc);
+        initToggle(toc);
+        initCollapseState(toc);
+        initSmoothScroll(toc);
+        initActiveHighlight(toc);
+        positionSidebar(toc);
+
+        var contentContainer = toc.parentElement;
+        if (contentContainer) {
+            var onVisibility = throttle(function () {
+                updateSidebarVisibility(toc, contentContainer);
+            }, 80);
+            window.addEventListener('scroll', onVisibility, { passive: true });
+            window.addEventListener('resize', onVisibility, { passive: true });
+        }
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', boot);
+    } else {
+        boot();
+    }
+    window.addEventListener('load', boot);
+    window.addEventListener('resize', debounce(function () {
+        var toc = document.getElementById('elegant-toc');
+        if (toc) positionSidebar(toc);
+    }, 150));
+})();

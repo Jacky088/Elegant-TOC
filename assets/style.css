@@ -1,0 +1,534 @@
+/* ============================================================
+   Elegant TOC v1.6.1 — Adaptive Layout
+   桌面端：左侧悬浮侧边栏
+   移动端/空间不足：左下角触发按钮 + 底部浮层面板
+   ============================================================ */
+
+html { scroll-behavior: smooth; }
+
+.elegant-toc-heading {
+  scroll-margin-top: var(--et-scroll-offset, 5.5rem);
+}
+
+/* ---------- 基础变量 ---------- */
+#elegant-toc.elegant-toc {
+  --et-accent: #1a1a1a;
+  --et-accent-light: #666;
+  --et-border: #e8e8e8;
+  --et-bg: #fafafa;
+  --et-text: #1a1a1a;
+  --et-muted: #555;
+  --et-faint: #999;
+  --et-hover-bg: #f0f0f0;
+  --et-active-bg: #f5f5f5;
+  --et-radius: 6px;
+  --et-font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", "PingFang SC", "Microsoft YaHei", Arial, sans-serif;
+
+  all: initial;
+  display: block;
+  box-sizing: border-box;
+  font-family: var(--et-font);
+  position: fixed;
+  left: 20px;
+  bottom: 20px;
+  z-index: 9999;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+#elegant-toc.elegant-toc *,
+#elegant-toc.elegant-toc *::before,
+#elegant-toc.elegant-toc *::after {
+  box-sizing: border-box;
+}
+
+/* ---------- 触发按钮（小屏/空间不足时左下角悬浮） ---------- */
+#elegant-toc .elegant-toc-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--et-bg);
+  border: 1px solid var(--et-border);
+  color: var(--et-text);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+  appearance: none;
+  -webkit-appearance: none;
+  padding: 0;
+  line-height: 0;
+}
+
+#elegant-toc .elegant-toc-trigger:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.22);
+  background: #fff;
+}
+
+#elegant-toc .elegant-toc-trigger:active {
+  transform: scale(0.95);
+}
+
+#elegant-toc .elegant-toc-trigger svg {
+  display: block;
+  width: 22px;
+  height: 22px;
+}
+
+/* ---------- 目录面板（默认隐藏） ---------- */
+#elegant-toc .elegant-toc-panel {
+  position: fixed;
+  left: 20px;
+  bottom: 80px;
+  z-index: 1;
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(20px) scale(0.9);
+  transform-origin: left bottom;
+  transition: opacity 0.3s ease, transform 0.3s ease, visibility 0.3s ease;
+
+  background: var(--et-bg);
+  border: 1px solid var(--et-border);
+  border-radius: var(--et-radius);
+  padding: 1rem 1.15rem;
+  width: 240px;
+  max-width: calc(100vw - 40px);
+  overflow: hidden;
+  font-size: 0.9375rem;
+  line-height: 1.55;
+  color: var(--et-text);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.12);
+}
+
+/* ---------- 移动端展开：底部浮层面板 ---------- */
+#elegant-toc.elegant-toc--mobile-open .elegant-toc-trigger {
+  display: none;
+}
+
+#elegant-toc.elegant-toc--mobile-open .elegant-toc-panel {
+  left: 20px;
+  bottom: 80px;
+  transform: translateY(0) scale(1);
+  visibility: visible;
+  opacity: 1;
+  pointer-events: auto;
+  width: calc(100% - 40px);
+  max-width: 420px;
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+@media (min-width: 600px) and (max-width: 1023px) {
+  #elegant-toc.elegant-toc--mobile-open .elegant-toc-panel {
+    max-width: 480px;
+    padding: 1.25rem 1.5rem;
+    font-size: 0.875rem;
+  }
+}
+
+/* ---------- 桌面端侧边栏 ---------- */
+#elegant-toc.elegant-toc--sidebar .elegant-toc-trigger {
+  display: none;
+}
+
+#elegant-toc.elegant-toc--sidebar .elegant-toc-panel {
+  left: var(--et-sidebar-left, 20px);
+  top: var(--et-sidebar-top, 100px);
+  bottom: auto;
+  transform: none;
+  transform-origin: center top;
+  visibility: visible;
+  opacity: 1;
+  pointer-events: auto;
+  width: 240px;
+  max-height: calc(100vh - var(--et-scroll-offset, 100px) - 40px);
+  overflow-y: auto;
+  box-shadow: none;
+  transition: opacity 0.25s ease, visibility 0.25s ease;
+}
+
+#elegant-toc.elegant-toc--sidebar.elegant-toc--hidden .elegant-toc-panel {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* ---------- 顶部装饰线（极细） ---------- */
+#elegant-toc .elegant-toc-topbar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--et-accent);
+  opacity: 0.08;
+}
+
+/* ---------- Header ---------- */
+#elegant-toc .elegant-toc-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 0 0.85rem 0;
+  margin: 0 0 0.75rem 0;
+  border-bottom: 1px solid var(--et-border);
+}
+
+#elegant-toc .elegant-toc-header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+/* 图标 — 极简线条风格 */
+#elegant-toc .elegant-toc-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  color: var(--et-text);
+  flex-shrink: 0;
+  line-height: 0;
+  opacity: 0.7;
+}
+
+#elegant-toc .elegant-toc-icon svg {
+  display: block;
+  width: 16px;
+  height: 16px;
+}
+
+#elegant-toc .elegant-toc-title {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--et-accent-light);
+  white-space: nowrap;
+}
+
+/* 折叠按钮 */
+#elegant-toc .elegant-toc-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+  color: var(--et-faint);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: color 0.2s ease, background 0.2s ease;
+  line-height: 0;
+  appearance: none;
+  -webkit-appearance: none;
+  padding: 0;
+}
+
+#elegant-toc .elegant-toc-toggle:hover {
+  color: var(--et-text);
+  background: var(--et-hover-bg);
+}
+
+#elegant-toc .elegant-toc-toggle svg {
+  display: block;
+  width: 14px;
+  height: 14px;
+  transition: transform 0.3s ease;
+}
+
+#elegant-toc.collapsed .elegant-toc-toggle svg {
+  transform: rotate(180deg);
+}
+
+/* 移动端关闭按钮 */
+#elegant-toc .elegant-toc-mobile-close {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+  color: var(--et-faint);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: color 0.2s ease, background 0.2s ease;
+  line-height: 0;
+  appearance: none;
+  -webkit-appearance: none;
+  padding: 0;
+}
+
+#elegant-toc .elegant-toc-mobile-close:hover {
+  color: var(--et-text);
+  background: var(--et-hover-bg);
+}
+
+#elegant-toc .elegant-toc-mobile-close svg {
+  display: block;
+  width: 16px;
+  height: 16px;
+}
+
+#elegant-toc.elegant-toc--mobile-open .elegant-toc-toggle {
+  display: none;
+}
+
+#elegant-toc.elegant-toc--mobile-open .elegant-toc-mobile-close {
+  display: inline-flex;
+}
+
+/* 可访问性 */
+#elegant-toc .elegant-toc-link:focus-visible,
+#elegant-toc .elegant-toc-toggle:focus-visible,
+#elegant-toc .elegant-toc-trigger:focus-visible,
+#elegant-toc .elegant-toc-mobile-close:focus-visible {
+  outline: 2px solid var(--et-accent);
+  outline-offset: 2px;
+}
+
+/* ---------- List ---------- */
+#elegant-toc .elegant-toc-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: calc(100vh - 200px);
+  overflow-y: auto;
+  overflow-x: hidden;
+  transition: max-height 0.4s ease, opacity 0.3s ease;
+}
+
+#elegant-toc.collapsed .elegant-toc-list {
+  max-height: 0;
+  opacity: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+#elegant-toc .elegant-toc-list::-webkit-scrollbar {
+  width: 4px;
+}
+#elegant-toc .elegant-toc-list::-webkit-scrollbar-thumb {
+  background: var(--et-border);
+  border-radius: 4px;
+}
+
+/* ---------- Items ---------- */
+#elegant-toc .elegant-toc-item {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+#elegant-toc .elegant-toc-item::before,
+#elegant-toc .elegant-toc-item::after {
+  content: none;
+  display: none;
+}
+
+/* ---------- Links ---------- */
+#elegant-toc .elegant-toc-link {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.3rem 0.6rem;
+  margin: 0.05rem 0;
+  text-decoration: none;
+  color: var(--et-muted);
+  border: none !important;
+  border-radius: 4px;
+  background: transparent;
+  font-family: inherit;
+  font-size: 0.9375rem;
+  font-weight: 400;
+  line-height: 1.5;
+  cursor: pointer;
+  transition: color 0.2s ease, background 0.2s ease;
+  box-shadow: none !important;
+  outline: none;
+}
+
+#elegant-toc .elegant-toc-link:hover {
+  color: var(--et-text);
+  background: var(--et-hover-bg);
+  text-decoration: none;
+}
+
+#elegant-toc .elegant-toc-link.active {
+  color: var(--et-text);
+  font-weight: 500;
+  background: var(--et-active-bg);
+}
+
+/* ---------- Bullet（极简小圆点） ---------- */
+#elegant-toc .elegant-toc-bullet {
+  width: 4px;
+  height: 4px;
+  min-width: 4px;
+  border-radius: 50%;
+  background: var(--et-faint);
+  flex-shrink: 0;
+  display: inline-block;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+#elegant-toc .elegant-toc-link:hover .elegant-toc-bullet {
+  background: var(--et-text);
+}
+
+#elegant-toc .elegant-toc-link.active .elegant-toc-bullet {
+  background: var(--et-accent);
+  transform: scale(1.5);
+}
+
+#elegant-toc .elegant-toc-text {
+  flex: 1 1 auto;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: block;
+}
+
+/* ---------- 缩进层级 ---------- */
+#elegant-toc .elegant-toc-level-1 { padding-left: 0.75rem; }
+#elegant-toc .elegant-toc-level-1 .elegant-toc-text { font-size: 0.9em; }
+
+#elegant-toc .elegant-toc-level-2 { padding-left: 1.5rem; }
+#elegant-toc .elegant-toc-level-2 .elegant-toc-text { font-size: 0.875em; color: var(--et-faint); }
+
+#elegant-toc .elegant-toc-level-3 { padding-left: 2.25rem; }
+#elegant-toc .elegant-toc-level-3 .elegant-toc-text { font-size: 0.85em; }
+
+/* ---------- 深色模式 ---------- */
+@media (prefers-color-scheme: dark) {
+  #elegant-toc.elegant-toc {
+    --et-accent: #f0f0f0;
+    --et-accent-light: #c0c0c0;
+    --et-border: #404040;
+    --et-bg: #1a1a1a;
+    --et-text: #f0f0f0;
+    --et-muted: #c0c0c0;
+    --et-faint: #9ca3af;
+    --et-hover-bg: #2d2d2d;
+    --et-active-bg: #333333;
+  }
+}
+
+body.dark-mode #elegant-toc.elegant-toc,
+body[data-theme="dark"] #elegant-toc.elegant-toc,
+.dark #elegant-toc.elegant-toc,
+html.dark #elegant-toc.elegant-toc {
+  --et-accent: #f0f0f0;
+  --et-accent-light: #c0c0c0;
+  --et-border: #404040;
+  --et-bg: #1a1a1a;
+  --et-text: #f0f0f0;
+  --et-muted: #c0c0c0;
+  --et-faint: #9ca3af;
+  --et-hover-bg: #2d2d2d;
+  --et-active-bg: #333333;
+}
+
+/* ---------- 个性化色彩主题 ---------- */
+#elegant-toc.elegant-toc.elegant-toc[data-et-theme="light"] {
+  --et-accent: #1a1a1a;
+  --et-accent-light: #666;
+  --et-border: #e8e8e8;
+  --et-bg: #fafafa;
+  --et-text: #1a1a1a;
+  --et-muted: #555;
+  --et-faint: #999;
+  --et-hover-bg: #f0f0f0;
+  --et-active-bg: #f5f5f5;
+}
+
+#elegant-toc.elegant-toc.elegant-toc[data-et-theme="blue"] {
+  --et-accent: #2563eb;
+  --et-accent-light: #3b82f6;
+  --et-border: #dbeafe;
+  --et-bg: #eff6ff;
+  --et-text: #1e3a8a;
+  --et-muted: #475569;
+  --et-faint: #60a5fa;
+  --et-hover-bg: #dbeafe;
+  --et-active-bg: #bfdbfe;
+}
+
+#elegant-toc.elegant-toc.elegant-toc[data-et-theme="green"] {
+  --et-accent: #16a34a;
+  --et-accent-light: #22c55e;
+  --et-border: #dcfce7;
+  --et-bg: #f0fdf4;
+  --et-text: #14532d;
+  --et-muted: #475569;
+  --et-faint: #4ade80;
+  --et-hover-bg: #dcfce7;
+  --et-active-bg: #bbf7d0;
+}
+
+#elegant-toc.elegant-toc.elegant-toc[data-et-theme="purple"] {
+  --et-accent: #9333ea;
+  --et-accent-light: #a855f7;
+  --et-border: #f3e8ff;
+  --et-bg: #faf5ff;
+  --et-text: #581c87;
+  --et-muted: #475569;
+  --et-faint: #c084fc;
+  --et-hover-bg: #f3e8ff;
+  --et-active-bg: #e9d5ff;
+}
+
+#elegant-toc.elegant-toc.elegant-toc[data-et-theme="orange"] {
+  --et-accent: #ea580c;
+  --et-accent-light: #f97316;
+  --et-border: #ffedd5;
+  --et-bg: #fff7ed;
+  --et-text: #7c2d12;
+  --et-muted: #475569;
+  --et-faint: #fb923c;
+  --et-hover-bg: #ffedd5;
+  --et-active-bg: #fed7aa;
+}
+
+#elegant-toc.elegant-toc.elegant-toc[data-et-theme="dark"] {
+  --et-accent: #f0f0f0;
+  --et-accent-light: #c0c0c0;
+  --et-border: #404040;
+  --et-bg: #1a1a1a;
+  --et-text: #f0f0f0;
+  --et-muted: #c0c0c0;
+  --et-faint: #9ca3af;
+  --et-hover-bg: #2d2d2d;
+  --et-active-bg: #333333;
+}
+
+/* ---------- 跳转目标闪烁 ---------- */
+.elegant-toc-target-flash {
+  animation: etFlash 1s ease;
+}
+@keyframes etFlash {
+  0%   { background-color: rgba(0,0,0,0.06); }
+  100% { background-color: transparent; }
+}
+
+/* ---------- 减弱动效 ---------- */
+@media (prefers-reduced-motion: reduce) {
+  #elegant-toc .elegant-toc-link,
+  #elegant-toc .elegant-toc-toggle svg,
+  #elegant-toc .elegant-toc-bullet,
+  #elegant-toc .elegant-toc-trigger,
+  #elegant-toc .elegant-toc-panel {
+    transition: none;
+  }
+}
