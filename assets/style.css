@@ -283,12 +283,17 @@ html { scroll-behavior: smooth; }
   height: 16px;
 }
 
-#elegant-toc.elegant-toc--mobile-open .elegant-toc-toggle {
+/* 移动端展开时显示关闭按钮、隐藏折叠按钮；桌面端侧边栏模式下保持折叠按钮 */
+#elegant-toc.elegant-toc--mobile-open:not(.elegant-toc--sidebar) .elegant-toc-toggle {
   display: none;
 }
 
-#elegant-toc.elegant-toc--mobile-open .elegant-toc-mobile-close {
+#elegant-toc.elegant-toc--mobile-open:not(.elegant-toc--sidebar) .elegant-toc-mobile-close {
   display: inline-flex;
+}
+
+#elegant-toc.elegant-toc--sidebar .elegant-toc-mobile-close {
+  display: none !important;
 }
 
 /* 可访问性 */
@@ -316,6 +321,14 @@ html { scroll-behavior: smooth; }
   opacity: 0;
   pointer-events: none;
   overflow: hidden;
+}
+
+/* 移动端展开时始终显示列表（不受桌面折叠状态影响） */
+#elegant-toc.elegant-toc--mobile-open .elegant-toc-list {
+  max-height: 60vh;
+  opacity: 1;
+  pointer-events: auto;
+  overflow-y: auto;
 }
 
 #elegant-toc .elegant-toc-list::-webkit-scrollbar {

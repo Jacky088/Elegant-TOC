@@ -283,6 +283,9 @@
         var tocTop = Math.max(refRect.top, headerOffset + 20);
         var tocLeft = Math.max(minLeftSpace, refRect.left - tocWidth - gap);
 
+        // 进入桌面模式前关闭移动端面板，防止关闭按钮残留到 PC 端
+        closeMobilePanel(toc);
+
         toc.classList.add('elegant-toc--sidebar');
         toc.style.setProperty('--et-sidebar-top', tocTop + 'px');
         toc.style.setProperty('--et-sidebar-left', tocLeft + 'px');
@@ -294,6 +297,8 @@
         toc.classList.remove('elegant-toc--sidebar', 'elegant-toc--hidden');
         toc.style.removeProperty('--et-sidebar-top');
         toc.style.removeProperty('--et-sidebar-left');
+        // 回到移动端模式时关闭已打开的面板，避免状态污染
+        closeMobilePanel(toc);
     }
 
     function updateSidebarVisibility(toc, contentContainer) {
