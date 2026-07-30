@@ -28,6 +28,22 @@
         }
     }
 
+    /* ---------- 字号同步：让目录字号跟随文章正文 ---------- */
+    function syncBaseFontSize(toc) {
+        var contentContainer = toc.parentElement;
+        if (!contentContainer) return;
+
+        try {
+            var baseSize = window.getComputedStyle(contentContainer).fontSize;
+            if (baseSize && baseSize !== '0px') {
+                toc.style.setProperty('--et-base-font-size', baseSize);
+                logDebug('sync base font-size: ' + baseSize);
+            }
+        } catch (e) {
+            logDebug('failed to sync base font-size');
+        }
+    }
+
     /* ---------- 折叠/展开 ---------- */
     function initToggle(toc) {
         var panel = toc.querySelector('.elegant-toc-panel');
@@ -311,6 +327,7 @@
         initCollapseState(toc);
         initSmoothScroll(toc);
         initActiveHighlight(toc);
+        syncBaseFontSize(toc);
         positionSidebar(toc);
 
         var contentContainer = toc.parentElement;
@@ -331,6 +348,9 @@
     window.addEventListener('load', boot);
     window.addEventListener('resize', debounce(function () {
         var toc = document.getElementById('elegant-toc');
-        if (toc) positionSidebar(toc);
+        if (toc) {
+            syncBaseFontSize(toc);
+            positionSidebar(toc);
+        }
     }, 150));
 })();
