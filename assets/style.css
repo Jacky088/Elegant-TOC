@@ -120,15 +120,15 @@ html { scroll-behavior: smooth; }
   visibility: visible;
   opacity: 1;
   pointer-events: auto;
-  width: calc(100% - 40px);
-  max-width: 420px;
+  width: calc(50% - 20px);
+  max-width: 210px;
   max-height: 70vh;
   overflow-y: auto;
 }
 
 @media (min-width: 600px) and (max-width: 1023px) {
   #elegant-toc.elegant-toc--mobile-open .elegant-toc-panel {
-    max-width: 480px;
+    max-width: 240px;
     padding: 1.25rem 1.5rem;
     font-size: var(--et-base-font-size);
   }
