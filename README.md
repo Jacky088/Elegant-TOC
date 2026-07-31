@@ -6,6 +6,9 @@
 ![WordPress](https://img.shields.io/badge/wordpress-5.0%2B-blue.svg)
 ![License](https://img.shields.io/badge/license-GPL%20v2-green.svg)
 
+## 页面预览
+![imgbed 预览](./screenshot-preview-pc-elegant-toc.jpg)
+
 ## ✨ 功能特性
 
 ### 核心功能
