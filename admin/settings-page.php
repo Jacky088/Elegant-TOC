@@ -104,6 +104,21 @@
                 </table>
             </div>
 
+            <div class="elegant-toc-section">
+                <h2>自定义样式</h2>
+                <p class="description">添加自定义 CSS 代码来进一步定制目录外观</p>
+
+                <table class="form-table">
+                    <tr>
+                        <th scope="row">自定义 CSS</th>
+                        <td>
+                            <textarea name="elegant_toc_options[custom_css]" rows="8" class="large-text code" placeholder="/* 在这里输入自定义 CSS 代码 */"><?php echo esc_textarea($options['custom_css']); ?></textarea>
+                            <p class="description">例如：#elegant-toc { --et-accent: #ff5722; }</p>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+
             <div class="elegant-toc-preview">
                 <h2>预览效果</h2>
                 <p class="description">这是目录的外观预览，选择配色后可实时查看效果</p>
@@ -132,6 +147,7 @@
                                 </svg>
                             </button>
                         </div>
+                        <input type="search" class="elegant-toc-search" placeholder="搜索目录..." aria-label="搜索目录" />
                         <ul class="elegant-toc-list">
                         <li class="elegant-toc-item elegant-toc-level-0">
                             <a href="#" class="elegant-toc-link active">

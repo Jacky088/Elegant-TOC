@@ -1,0 +1,56 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Elegant TOC 1.7.0\n"
+"Report-Msgid-Bugs-To: https://github.com/Jacky088/Elegant-TOC/issues\n"
+"POT-Creation-Date: 2026-07-31 12:00+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: elegant-toc.php:100
+msgid "权限不足"
+msgstr ""
+
+#: elegant-toc.php:200
+msgid "文章目录"
+msgstr ""
+
+#: elegant-toc.php:205
+msgid "打开目录"
+msgstr ""
+
+#: elegant-toc.php:210
+msgid "折叠目录"
+msgstr ""
+
+#: elegant-toc.php:215
+msgid "关闭目录"
+msgstr ""
+
+#: elegant-toc.php:220
+msgid "搜索目录..."
+msgstr ""
+
+#: elegant-toc.php:225
+msgid "搜索目录"
+msgstr ""
+
+#: elegant-toc.php:230
+msgid "跳转到："
+msgstr ""
+
+#: admin/settings-page.php:10
+msgid "在此文章/页面中禁用目录"
+msgstr ""
+
+#: admin/settings-page.php:15
+msgid "勾选后，本文将不会自动显示 Elegant TOC 目录。"
+msgstr ""
+
+#: admin/settings-page.php:25
+msgid "设置"
+msgstr ""
