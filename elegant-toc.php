@@ -260,6 +260,27 @@ class Elegant_TOC {
     }
 
     /**
+     * 清除选项缓存
+     */
+    public function clear_options_cache() {
+        $this->cached_options = null;
+    }
+
+    /**
+     * 返回插件主文件路径
+     */
+    public function get_plugin_file() {
+        return __FILE__;
+    }
+
+    /**
+     * 返回 CSS 版本号
+     */
+    public function get_css_version() {
+        return $this->css_ver;
+    }
+
+    /**
      * 允许使用的色彩主题
      */
     public function get_allowed_color_themes() {
