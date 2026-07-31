@@ -1,5 +1,25 @@
 # Elegant TOC - 优雅的 WordPress 文章目录插件
 
+## Recent changes (local developer notes)
+
+2026-07-31 — Visual & animation improvements
+
+- 改进面板视觉：更柔和的玻璃质感、圆角和更自然的阴影（修改 `assets/style.css`）。
+- 统一面板进入/离开动画并使用显式类：`.et-open` / `.et-closing`（修改 `assets/style.css`、`assets/script.js`）。
+- 修复触发按钮悬浮提示在键盘聚焦或某些环境下不显示的问题，确保 `data-tooltip` 始终存在（修改 `includes/class-frontend.php` 生成属性，且脚本在运行时补充）（修改 `assets/script.js`）。
+- 移除面板顶部的细线装饰，视觉更干净（修改 `assets/style.css`）。
+- 修复关闭动画中面板宽度突变的问题：在打开/关闭动画期间锁定面板的 `width`/`min-width`/`max-width` 并临时隐藏溢出，动画结束后解锁（修改 `assets/script.js`）。
+
+测试与本地验证步骤：
+
+1. 强制刷新页面（Ctrl+F5）。
+2. 小屏（或模拟移动设备）下：点击左下角触发按钮，观察面板打开/关闭动画是否平滑且无宽度跳变；检查触发按钮的悬浮提示是否可见（悬浮与键盘聚焦）。
+3. 桌面宽度：确认侧边栏模式下面板打开/关闭平滑，顶部细线已移除。
+4. 如使用 `script.min.js` / `style.min.css`，请确保重新生成或禁用缓存的合并文件以加载最新修改。
+
+如果需要，我可以把这些改动压缩为生产版本并提交到远程仓库。
+# Elegant TOC - 优雅的 WordPress 文章目录插件
+
 一个现代、轻量、自适应的 WordPress 文章目录插件，自动生成美观的目录，支持平滑滚动、智能高亮和丰富的个性化配置。
 
 ![Version](https://img.shields.io/badge/version-1.7.0-blue.svg)

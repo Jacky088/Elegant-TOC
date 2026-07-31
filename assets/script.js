@@ -28,6 +28,30 @@
         }
     }
 
+    /* ---------- Panel width lock helpers (prevent width jump during animation) ---------- */
+    function lockPanelWidth(panel) {
+        if (!panel) return;
+        try {
+            var w = panel.getBoundingClientRect().width;
+            var px = Math.round(w) + 'px';
+            panel.style.width = px;
+            panel.style.minWidth = px;
+            panel.style.maxWidth = px;
+            // 临时隐藏溢出（避免出现或消失的滚动条改变宽度）
+            panel.style.overflow = 'hidden';
+        } catch (e) {}
+    }
+
+    function unlockPanelWidth(panel) {
+        if (!panel) return;
+        try {
+            panel.style.width = '';
+            panel.style.minWidth = '';
+            panel.style.maxWidth = '';
+            panel.style.overflow = '';
+        } catch (e) {}
+    }
+
     /* ---------- 字号同步：让目录字号跟随文章正文 ---------- */
     function syncBaseFontSize(toc) {
         var contentContainer = toc.parentElement;
@@ -206,12 +230,30 @@
 
     /* ---------- 移动端面板 ---------- */
     function openMobilePanel(toc) {
+        var panel = toc.querySelector('.elegant-toc-panel');
         toc.classList.add('elegant-toc--mobile-open');
+        if (panel) {
+            panel.style.visibility = 'visible';
+            panel.classList.remove('et-closing');
+            // 解除旧的宽度限制，重新计算打开时的宽度并锁定，防止关闭/打开动画中宽度跳变
+            unlockPanelWidth(panel);
+            void panel.offsetWidth;
+            lockPanelWidth(panel);
+            panel.classList.add('et-open');
+        }
         var trigger = toc.querySelector('.elegant-toc-trigger');
         if (trigger) trigger.setAttribute('aria-expanded', 'true');
     }
 
     function closeMobilePanel(toc) {
+        var panel = toc.querySelector('.elegant-toc-panel');
+        if (panel) {
+            // 在开始关闭动画前锁定当前宽度，避免滚动条或内容变化导致宽度跳变
+            lockPanelWidth(panel);
+            panel.classList.remove('et-open');
+            panel.classList.add('et-closing');
+            // visibility 会在 transitionend 回调中隐藏，避免内容闪烁；解锁在 transitionend 中处理
+        }
         toc.classList.remove('elegant-toc--mobile-open');
         var trigger = toc.querySelector('.elegant-toc-trigger');
         if (trigger) trigger.setAttribute('aria-expanded', 'false');
@@ -220,11 +262,20 @@
     function initMobilePanel(toc) {
         var trigger = toc.querySelector('.elegant-toc-trigger');
         var closeBtn = toc.querySelector('.elegant-toc-mobile-close');
+        var panel = toc.querySelector('.elegant-toc-panel');
 
         if (trigger) {
             trigger.addEventListener('click', function () {
                 openMobilePanel(toc);
             });
+            // 确保悬浮提示属性存在（修复提示文字消失问题）
+            if (!trigger.getAttribute('data-tooltip')) {
+                var tt = trigger.getAttribute('title') || trigger.getAttribute('aria-label') || '';
+                if (tt) trigger.setAttribute('data-tooltip', tt);
+            }
+            // 焦点可见时也显示 tooltip，提升可访问性
+            trigger.addEventListener('focus', function () { trigger.classList.add('et-tooltip-visible'); });
+            trigger.addEventListener('blur', function () { trigger.classList.remove('et-tooltip-visible'); });
         }
 
         if (closeBtn) {
@@ -240,6 +291,22 @@
                 closeMobilePanel(toc);
             }
         });
+
+        // 监听 panel transitionend，清理动画类并隐藏
+        if (panel) {
+            panel.addEventListener('transitionend', function (e) {
+                if (e.propertyName !== 'opacity' && e.propertyName !== 'transform') return;
+                // 关闭完成：隐藏并解锁宽度
+                if (panel.classList.contains('et-closing')) {
+                    panel.classList.remove('et-closing');
+                    panel.style.visibility = 'hidden';
+                    unlockPanelWidth(panel);
+                } else if (panel.classList.contains('et-open')) {
+                    // 打开完成：解锁宽度以允许响应式变化
+                    unlockPanelWidth(panel);
+                }
+            });
+        }
     }
 
     /* ---------- 桌面端侧边栏定位 ---------- */
@@ -288,6 +355,18 @@
         toc.classList.add('elegant-toc--sidebar');
         toc.style.setProperty('--et-sidebar-top', tocTop + 'px');
         toc.style.setProperty('--et-sidebar-left', tocLeft + 'px');
+
+        // 保证侧边栏面板可见并使用统一的动画类
+        var panel = toc.querySelector('.elegant-toc-panel');
+        if (panel) {
+            panel.style.visibility = 'visible';
+            panel.classList.remove('et-closing');
+            // 计算并锁定打开时的宽度，避免在动画过程中出现宽度跳变
+            unlockPanelWidth(panel);
+            void panel.offsetWidth;
+            lockPanelWidth(panel);
+            panel.classList.add('et-open');
+        }
 
         updateSidebarVisibility(toc, contentContainer);
     }
