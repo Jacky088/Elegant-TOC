@@ -3,7 +3,7 @@
  * Plugin Name: Elegant TOC
  * Plugin URI: https://github.com/Jacky088/Elegant-TOC
  * Description: 优雅的文章目录插件，自动生成美观的文章目录，支持平滑滚动和高亮显示
- * Version: 1.7.0
+ * Version: 1.8.0
  * Author: 木木
  * Author URI: https://github.com/Jacky088/Elegant-TOC
  * License: GPL v2 or later
@@ -16,7 +16,7 @@ if (!defined('ABSPATH')) {
 
 class Elegant_TOC {
     private static $instance = null;
-    const VERSION = '1.7.0';
+    const VERSION = '1.8.0';
 
     /** 缓存的资源版本号（含 filemtime） */
     private $css_ver = '';
