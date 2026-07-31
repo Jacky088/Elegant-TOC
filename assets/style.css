@@ -228,7 +228,7 @@ html { scroll-behavior: smooth; }
 
 #elegant-toc.elegant-toc--sidebar .elegant-toc-panel {
   left: var(--et-sidebar-left, 20px);
-  top: var(--et-sidebar-top, 100px);
+  top: calc(var(--et-sidebar-top, 100px) + 10px);
   bottom: auto;
   transform: none;
   transform-origin: center top;
