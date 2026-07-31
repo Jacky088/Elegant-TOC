@@ -137,7 +137,7 @@ html { scroll-behavior: smooth; }
 }
 
 #elegant-toc .elegant-toc-trigger:hover svg {
-  transform: rotate(5deg) scale(1.1);
+  transform: scale(1.1);
 }
 
 /* ---------- 目录面板（默认隐藏） ---------- */

@@ -161,11 +161,6 @@
                 behavior: 'smooth'
             });
 
-            // 移动端点击链接后自动关闭面板
-            if (toc.classList.contains('elegant-toc--mobile-open')) {
-                closeMobilePanel(toc);
-            }
-
             // 高亮闪烁目标
             target.classList.add('elegant-toc-target-flash');
             setTimeout(function () {
