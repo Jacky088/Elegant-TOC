@@ -120,7 +120,9 @@
     function getOffset() {
         var offset = 100;
         var adminbar = document.getElementById('wpadminbar');
-        var header = document.querySelector('.site-header, .site-header-inner, header[role="banner"], .sticky-header, #masthead');
+        var header = document.querySelector(
+            '.site-header, .site-header-inner, header[role="banner"], .sticky-header, #masthead, .main-header, .header-fixed, .site-navigation, .main-navigation'
+        );
 
         if (adminbar) {
             offset = Math.max(offset, adminbar.offsetHeight + 20);
@@ -311,7 +313,7 @@
 
         var minViewport = 1024;
         var tocWidth = 240;
-        var gap = 24;
+        var gap = 36;
         var minLeftSpace = 10;
 
         // 小屏直接走移动端触发按钮模式
@@ -341,7 +343,7 @@
         var headerOffset = getOffset();
 
         // 目录顶部与正文第一个内容元素顶端对齐，并随滚动同步
-        var tocTop = Math.max(refRect.top, headerOffset + 20);
+        var tocTop = Math.max(refRect.top, headerOffset + 30);
         var tocLeft = Math.max(minLeftSpace, refRect.left - tocWidth - gap);
 
         // 进入桌面模式前关闭移动端面板，防止关闭按钮残留到 PC 端
