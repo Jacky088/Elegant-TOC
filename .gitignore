@@ -1,0 +1,17 @@
+# 测试/演示文件
+demo.html
+create_zip.py
+
+# 缓存与生成文件
+__pycache__/
+*.pyc
+*.zip
+
+# IDE / 工具数据
+.codebuddy/
+.vscode/
+.idea/
+
+# 系统文件
+.DS_Store
+Thumbs.db
