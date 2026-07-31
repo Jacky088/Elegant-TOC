@@ -179,7 +179,7 @@ class Elegant_TOC {
         wp_enqueue_style('elegant-toc', plugins_url('assets/style.css', __FILE__), array(), $this->css_ver);
     }
 
-    private function get_options() {
+    public function get_options() {
         // 使用缓存避免多次数据库查询
         if ($this->options_cache !== null) {
             return $this->options_cache;
@@ -206,6 +206,8 @@ class Elegant_TOC {
 
         return $this->options_cache;
     }
+
+    private function should_load_on_page() {
         if (!is_singular() || is_front_page() || is_feed()) {
             return false;
         }
@@ -239,11 +241,11 @@ class Elegant_TOC {
         return true;
     }
 
-    private function get_supported_post_types() {
+    public function get_supported_post_types() {
         return (array) apply_filters('elegant_toc_post_types', array('post', 'page'));
     }
 
-    private function is_post_disabled($post_id) {
+    public function is_post_disabled($post_id) {
         return get_post_meta($post_id, 'disable_toc', true) === '1';
     }
 
@@ -326,7 +328,7 @@ class Elegant_TOC {
         return substr_replace($content, $toc, $pos, strlen($placeholder));
     }
 
-    private function get_options() {
+    public function get_options() {
         // 使用缓存避免多次数据库查询
         if ($this->options_cache !== null) {
             return $this->options_cache;
@@ -494,169 +496,6 @@ class Elegant_TOC {
         return $toc;
     }
 
-    /* ------------------------------------------------------------------ */
-    /*  单篇控制（元数据框）                                                  */
-    /* ------------------------------------------------------------------ */
-
-    public function add_post_meta_box() {
-        $post_types = $this->get_supported_post_types();
-        foreach ($post_types as $post_type) {
-            add_meta_box(
-                'elegant_toc_meta_box',
-                __('Elegant TOC', 'elegant-toc'),
-                array($this, 'render_post_meta_box'),
-                $post_type,
-                'side',
-                'default'
-            );
-        }
-    }
-
-    public function render_post_meta_box($post) {
-        wp_nonce_field('elegant_toc_meta_box', 'elegant_toc_meta_box_nonce');
-        $disabled = $this->is_post_disabled($post->ID);
-        ?>
-        <p>
-            <label>
-                <input type="checkbox" name="disable_toc" value="1" <?php checked($disabled, true); ?> />
-                <?php esc_html_e('在此文章/页面中禁用目录', 'elegant-toc'); ?>
-            </label>
-        </p>
-        <p class="description">
-            <?php esc_html_e('勾选后，本文将不会自动显示 Elegant TOC 目录。', 'elegant-toc'); ?>
-        </p>
-        <?php
-    }
-
-    public function save_post_meta_box($post_id) {
-        if (!isset($_POST['elegant_toc_meta_box_nonce'])) {
-            return;
-        }
-        if (!wp_verify_nonce($_POST['elegant_toc_meta_box_nonce'], 'elegant_toc_meta_box')) {
-            return;
-        }
-        if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) {
-            return;
-        }
-        if (!current_user_can('edit_post', $post_id)) {
-            return;
-        }
-
-        if (isset($_POST['disable_toc']) && $_POST['disable_toc'] === '1') {
-            update_post_meta($post_id, 'disable_toc', '1');
-        } else {
-            delete_post_meta($post_id, 'disable_toc');
-        }
-    }
-
-    /* ------------------------------------------------------------------ */
-    /*  后台设置                                                             */
-    /* ------------------------------------------------------------------ */
-
-    public function add_admin_menu() {
-        add_options_page(
-            'Elegant TOC 设置',
-            'Elegant TOC',
-            'manage_options',
-            'elegant-toc',
-            array($this, 'render_settings_page')
-        );
-    }
-
-    /**
-     * 在插件列表页增加”设置”入口
-     */
-    public function add_plugin_action_links($links) {
-        // 安全检查
-        if (!current_user_can('manage_options')) {
-            return $links;
-        }
-
-        $settings_link = '<a href=”' . esc_url(admin_url('options-general.php?page=elegant-toc')) . '”>' . __('设置', 'elegant-toc') . '</a>';
-
-        $ordered = array();
-        foreach ($links as $key => $value) {
-            $ordered[$key] = $value;
-            // 在「停用」之后插入「设置」
-            if ($key === 'deactivate') {
-                $ordered['settings'] = $settings_link;
-            }
-        }
-
-        // 兜底：若链接中没有停用入口，则放到末尾
-        if (!isset($ordered['settings'])) {
-            $ordered['settings'] = $settings_link;
-        }
-
-        return $ordered;
-    }
-
-    public function register_settings() {
-        register_setting(
-            'elegant_toc_options',
-            'elegant_toc_options',
-            array($this, 'sanitize_options')
-        );
-    }
-
-    /**
-     * 选项清理/验证回调
-     */
-    public function sanitize_options($input) {
-        $clean = array();
-        $clean['enabled'] = !empty($input['enabled']);
-        $clean['min_headings'] = max(1, min(10, intval(isset($input['min_headings']) ? $input['min_headings'] : 3)));
-
-        $allowed_levels = array('h2', 'h3', 'h4', 'h5', 'h6');
-        $clean['heading_levels'] = array();
-        if (!empty($input['heading_levels']) && is_array($input['heading_levels'])) {
-            foreach ($input['heading_levels'] as $level) {
-                $level = sanitize_text_field($level);
-                if (in_array($level, $allowed_levels, true)) {
-                    $clean['heading_levels'][] = $level;
-                }
-            }
-        }
-        if (empty($clean['heading_levels'])) {
-            $clean['heading_levels'] = array('h2');
-        }
-
-        $allowed_themes = $this->get_allowed_color_themes();
-        $clean['color_theme'] = 'light';
-        if (!empty($input['color_theme'])) {
-            $theme = sanitize_text_field($input['color_theme']);
-            if (in_array($theme, $allowed_themes, true)) {
-                $clean['color_theme'] = $theme;
-            }
-        }
-
-        // 自定义 CSS 清理
-        $clean['custom_css'] = '';
-        if (!empty($input['custom_css'])) {
-            $css = wp_strip_all_tags($input['custom_css']);
-            // 移除潜在的恶意 CSS
-            $css = preg_replace('/javascript:/i', '', $css);
-            $css = preg_replace('/expression\s*\(/i', '', $css);
-            $css = preg_replace('/behaviour\s*:/i', '', $css);
-            $css = preg_replace(/-moz-binding\s*:/i', '', $css);
-            $clean['custom_css'] = sanitize_textarea_field($css);
-        }
-
-        // 清除缓存
-        $this->options_cache = null;
-
-        return $clean;
-    }
-
-    public function render_settings_page() {
-        // 权限检查
-        if (!current_user_can('manage_options')) {
-            wp_die(__('权限不足', 'elegant-toc'));
-        }
-
-        $options = $this->get_options();
-        include plugin_dir_path(__FILE__) . 'admin/settings-page.php';
-    }
 }
 
 Elegant_TOC::get_instance();
