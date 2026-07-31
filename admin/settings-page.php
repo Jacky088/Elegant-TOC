@@ -23,6 +23,32 @@
                     </tr>
 
                     <tr>
+                        <th scope="row">显示位置</th>
+                        <td>
+                            <p class="description" style="margin-top: 0; margin-bottom: 10px;">选择在哪些内容类型中显示目录</p>
+                            <?php
+                            // 获取所有公开的文章类型
+                            $post_types = get_post_types(array('public' => true), 'objects');
+                            $selected_types = !empty($options['post_types']) ? $options['post_types'] : array('post', 'page');
+
+                            foreach ($post_types as $post_type) :
+                                // 排除附件类型
+                                if ($post_type->name === 'attachment') {
+                                    continue;
+                                }
+                                $is_checked = in_array($post_type->name, $selected_types);
+                            ?>
+                                <label style="display: block; margin-bottom: 6px;">
+                                    <input type="checkbox" name="elegant_toc_options[post_types][]" value="<?php echo esc_attr($post_type->name); ?>" <?php checked($is_checked); ?> />
+                                    <?php echo esc_html($post_type->labels->name); ?>
+                                    <span style="color: #666; font-size: 0.9em;">(<?php echo esc_html($post_type->name); ?>)</span>
+                                </label>
+                            <?php endforeach; ?>
+                            <p class="description">默认勾选"文章"和"页面"</p>
+                        </td>
+                    </tr>
+
+                    <tr>
                         <th scope="row">最少标题数</th>
                         <td>
                             <input type="number" name="elegant_toc_options[min_headings]" value="<?php echo esc_attr($options['min_headings']); ?>" min="1" max="10" class="small-text" />

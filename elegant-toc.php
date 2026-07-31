@@ -140,7 +140,9 @@ class Elegant_TOC {
     }
 
     private function get_supported_post_types() {
-        return (array) apply_filters('elegant_toc_post_types', array('post', 'page'));
+        $options = $this->get_options();
+        $post_types = !empty($options['post_types']) ? $options['post_types'] : array('post', 'page');
+        return (array) apply_filters('elegant_toc_post_types', $post_types);
     }
 
     private function is_post_disabled($post_id) {
@@ -254,6 +256,9 @@ class Elegant_TOC {
             'color_theme'    => (!empty($options['color_theme']) && is_string($options['color_theme']))
                 ? $options['color_theme']
                 : 'light',
+            'post_types'     => (!empty($options['post_types']) && is_array($options['post_types']))
+                ? $options['post_types']
+                : array('post', 'page'),
         );
 
         return $this->cached_options;
@@ -551,6 +556,23 @@ class Elegant_TOC {
             if (in_array($theme, $allowed_themes, true)) {
                 $clean['color_theme'] = $theme;
             }
+        }
+
+        // 验证文章类型
+        $clean['post_types'] = array();
+        if (!empty($input['post_types']) && is_array($input['post_types'])) {
+            $all_post_types = get_post_types(array('public' => true), 'names');
+            foreach ($input['post_types'] as $post_type) {
+                $post_type = sanitize_text_field($post_type);
+                // 验证是否为有效的公开文章类型，且排除附件
+                if (in_array($post_type, $all_post_types, true) && $post_type !== 'attachment') {
+                    $clean['post_types'][] = $post_type;
+                }
+            }
+        }
+        // 如果没有选择任何类型，默认使用 post 和 page
+        if (empty($clean['post_types'])) {
+            $clean['post_types'] = array('post', 'page');
         }
 
         return $clean;
