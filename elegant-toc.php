@@ -183,6 +183,14 @@ class Elegant_TOC {
             return $content;
         }
 
+        // 检查当前文章类型是否在用户选择的范围内（仅在自动插入时检查）
+        if ($auto_insert && !$has_shortcode) {
+            $post_types = $this->get_supported_post_types();
+            if (!in_array($post->post_type, $post_types, true)) {
+                return $content;
+            }
+        }
+
         $result   = $this->extract_and_annotate_headings($content, $options['heading_levels']);
         $headings = $result['headings'];
         $content  = $result['content'];
