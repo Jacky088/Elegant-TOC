@@ -492,6 +492,21 @@ html { scroll-behavior: smooth; }
   transform: scale(1.5);
 }
 
+#elegant-toc .elegant-toc-link.et-top-highlight {
+  background: rgba(253, 230, 138, 0.4);
+  animation: etTopHighlight 1.2s ease;
+}
+#elegant-toc .elegant-toc-link.et-top-highlight .elegant-toc-bullet {
+  background: var(--et-accent);
+  transform: scale(1.7);
+}
+
+@keyframes etTopHighlight {
+  0% { background: rgba(253, 230, 138, 0.65); }
+  50% { background: rgba(253, 230, 138, 0.35); }
+  100% { background: rgba(253, 230, 138, 0.1); }
+}
+
 #elegant-toc .elegant-toc-text {
   flex: 1 1 auto;
   min-width: 0;

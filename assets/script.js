@@ -210,16 +210,28 @@
 
             active = firstVisible || lastAbove || targets[targets.length - 1];
 
-            links.forEach(function (link) { link.classList.remove('active'); });
+            links.forEach(function (link) {
+                link.classList.remove('active');
+                link.classList.remove('et-top-highlight');
+            });
             if (active) {
                 active.link.classList.add('active');
+                var isTopCue = active === targets[0] && window.pageYOffset <= offset + 20;
+                if (isTopCue) {
+                    active.link.classList.add('et-top-highlight');
+                }
                 var list = panel.querySelector('.elegant-toc-list');
                 if (list) {
                     var linkTop = active.link.offsetTop;
                     var listHeight = list.clientHeight;
                     var linkHeight = active.link.clientHeight;
                     var scrollTop = list.scrollTop;
-                    if (linkTop < scrollTop) {
+                    var nearPageTop = window.pageYOffset <= offset + 20;
+
+                    if (active === targets[0] || nearPageTop) {
+                        // 回到页面顶部时，目录面板自动回到首项
+                        list.scrollTop = 0;
+                    } else if (linkTop < scrollTop) {
                         list.scrollTop = linkTop - 10;
                     } else if (linkTop + linkHeight > scrollTop + listHeight) {
                         list.scrollTop = linkTop + linkHeight - listHeight + 10;
