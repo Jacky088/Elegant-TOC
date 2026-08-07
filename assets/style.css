@@ -203,7 +203,7 @@ html { scroll-behavior: smooth; }
   bottom: 88px;
   width: calc(50% - 20px);
   max-width: 240px;
-  max-height: var(--et-mobile-panel-max-height, 70vh);
+  max-height: min(var(--et-mobile-panel-max-height, 70vh), 70vh);
   overflow-y: auto;
   /* 确保 JS 会加上 .et-open 类来触发统一的动画 */
   opacity: 1;
