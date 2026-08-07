@@ -25,6 +25,8 @@ html { scroll-behavior: smooth; }
   --et-font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", "PingFang SC", "Microsoft YaHei", Arial, sans-serif;
   /* 基准字号：默认回退值，运行时会由 JS 同步为文章正文的实际字号 */
   --et-base-font-size: 1rem;
+  --et-panel-max-lines: 16;
+  --et-panel-line-height: 1.45;
 
   all: initial;
   display: block;
@@ -162,7 +164,7 @@ html { scroll-behavior: smooth; }
   padding: 1.25rem 1.35rem;
   width: 260px;
   max-width: calc(100vw - 40px);
-  max-height: 70vh;
+  max-height: var(--et-panel-max-height, 70vh);
   overflow: hidden;
   font-size: 0.9375rem;
   line-height: 1.6;
@@ -201,7 +203,7 @@ html { scroll-behavior: smooth; }
   bottom: 88px;
   width: calc(50% - 20px);
   max-width: 240px;
-  max-height: 70vh;
+  max-height: var(--et-mobile-panel-max-height, 70vh);
   overflow-y: auto;
   /* 确保 JS 会加上 .et-open 类来触发统一的动画 */
   opacity: 1;
@@ -237,7 +239,7 @@ html { scroll-behavior: smooth; }
   opacity: 1;
   pointer-events: auto;
   width: 240px;
-  max-height: calc(100vh - var(--et-scroll-offset, 100px) - 40px);
+  max-height: var(--et-sidebar-max-height, calc(100vh - var(--et-scroll-offset, 100px) - 40px));
   overflow-y: auto;
   box-shadow: none;
   transition: opacity 0.25s ease, visibility 0.25s ease;
@@ -393,7 +395,7 @@ html { scroll-behavior: smooth; }
   list-style: none;
   margin: 0;
   padding: 0;
-  max-height: calc(100vh - 200px);
+  max-height: calc(var(--et-base-font-size) * var(--et-panel-line-height) * var(--et-panel-max-lines));
   overflow-y: auto;
   overflow-x: hidden;
   transition: max-height 0.4s ease, opacity 0.3s ease;
@@ -408,7 +410,7 @@ html { scroll-behavior: smooth; }
 
 /* 移动端展开时始终显示列表（不受桌面折叠状态影响） */
 #elegant-toc.elegant-toc--mobile-open .elegant-toc-list {
-  max-height: 60vh;
+  max-height: calc(var(--et-mobile-panel-max-height, 60vh) - 5rem);
   opacity: 1;
   pointer-events: auto;
   overflow-y: auto;

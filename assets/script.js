@@ -256,6 +256,20 @@
         if (trigger) trigger.setAttribute('aria-expanded', 'false');
     }
 
+    function updateMobilePanelHeight(toc) {
+        var contentContainer = toc.parentElement;
+        if (!contentContainer) return;
+
+        var contentRect = contentContainer.getBoundingClientRect();
+        var contentBottom = contentRect.bottom;
+        var bottomSafeGap = 20;
+        var panelBottomOffset = 88; // fixed mobile panel bottom distance
+
+        // 尾部边界：移动版目录面板高度只依据文章容器底部，而不是整个浏览器页面
+        var availableHeight = Math.max(0, contentBottom - panelBottomOffset - bottomSafeGap);
+        toc.style.setProperty('--et-mobile-panel-max-height', availableHeight + 'px');
+    }
+
     function initMobilePanel(toc) {
         var trigger = toc.querySelector('.elegant-toc-trigger');
         var closeBtn = toc.querySelector('.elegant-toc-mobile-close');
@@ -263,6 +277,7 @@
 
         if (trigger) {
             trigger.addEventListener('click', function () {
+                updateMobilePanelHeight(toc);
                 openMobilePanel(toc);
             });
             // 确保悬浮提示属性存在（修复提示文字消失问题）
@@ -346,12 +361,18 @@
         var tocTop = Math.max(refRect.top, headerOffset + 30);
         var tocLeft = Math.max(minLeftSpace, refRect.left - tocWidth - gap);
 
+        // 尾部边界：目录面板高度只依据文章容器底部，不以整个浏览器页面为准
+        var contentBottom = contentRect.bottom;
+        var panelBottomLimit = contentBottom - 20;
+        var sidebarMaxHeight = Math.max(0, panelBottomLimit - tocTop);
+
         // 进入桌面模式前关闭移动端面板，防止关闭按钮残留到 PC 端
         closeMobilePanel(toc);
 
         toc.classList.add('elegant-toc--sidebar');
         toc.style.setProperty('--et-sidebar-top', tocTop + 'px');
         toc.style.setProperty('--et-sidebar-left', tocLeft + 'px');
+        toc.style.setProperty('--et-sidebar-max-height', sidebarMaxHeight + 'px');
 
         // 保证侧边栏面板可见并使用统一的动画类
         var panel = toc.querySelector('.elegant-toc-panel');
@@ -389,10 +410,22 @@
         var tocTop = Math.max(refRect.top, headerOffset + 20);
         toc.style.setProperty('--et-sidebar-top', tocTop + 'px');
 
-        if (inView) {
-            toc.classList.remove('elegant-toc--hidden');
-        } else {
+        // 尾部边界更新：保持目录面板只在文章容器范围内可见
+        var contentBottom = contentRect.bottom;
+        var panelBottomLimit = contentBottom - 20;
+        var sidebarMaxHeight = Math.max(0, panelBottomLimit - tocTop);
+        toc.style.setProperty('--et-sidebar-max-height', sidebarMaxHeight + 'px');
+
+        var panel = toc.querySelector('.elegant-toc-panel');
+        var panelHeight = panel ? panel.getBoundingClientRect().height : 0;
+        var panelBottom = tocTop + panelHeight;
+        var prematureHideThreshold = 48; // 距离文章底部多少像素开始淡出
+        var tooCloseToBottom = panelBottom > contentBottom - prematureHideThreshold;
+
+        if (!inView || tooCloseToBottom) {
             toc.classList.add('elegant-toc--hidden');
+        } else {
+            toc.classList.remove('elegant-toc--hidden');
         }
     }
 
@@ -409,14 +442,26 @@
         initActiveHighlight(toc);
         syncBaseFontSize(toc);
         positionSidebar(toc);
+        updateMobilePanelHeight(toc);
 
         var contentContainer = toc.parentElement;
         if (contentContainer) {
-            var onVisibility = throttle(function () {
+            var scrollPending = false;
+            var onScroll = function () {
+                if (scrollPending) return;
+                scrollPending = true;
+                window.requestAnimationFrame(function () {
+                    scrollPending = false;
+                    updateSidebarVisibility(toc, contentContainer);
+                });
+            };
+
+            var onResize = throttle(function () {
                 updateSidebarVisibility(toc, contentContainer);
             }, 80);
-            window.addEventListener('scroll', onVisibility, { passive: true });
-            window.addEventListener('resize', onVisibility, { passive: true });
+
+            window.addEventListener('scroll', onScroll, { passive: true });
+            window.addEventListener('resize', onResize, { passive: true });
         }
     }
 
@@ -431,6 +476,7 @@
         if (toc) {
             syncBaseFontSize(toc);
             positionSidebar(toc);
+            updateMobilePanelHeight(toc);
         }
     }, 150));
 })();
