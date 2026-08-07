@@ -293,8 +293,9 @@
         var bottomSafeGap = 20;
         var panelBottomOffset = 88; // fixed mobile panel bottom distance
 
-        // 尾部边界：移动版目录面板高度只依据文章容器底部，同时限制最大高度防止铺满整个页面
-        var availableHeight = Math.max(0, contentBottom - panelBottomOffset - bottomSafeGap);
+        // 尾部边界：移动版目录面板高度应以视口高度为下限，避免滑动到文章底部时过度收缩。
+        var effectiveBottom = Math.max(contentBottom, window.innerHeight);
+        var availableHeight = Math.max(0, effectiveBottom - panelBottomOffset - bottomSafeGap);
         var viewportLimit = Math.max(0, window.innerHeight * 0.7);
         var panelMaxHeight = Math.min(availableHeight, viewportLimit);
         toc.style.setProperty('--et-mobile-panel-max-height', panelMaxHeight + 'px');
