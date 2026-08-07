@@ -189,18 +189,26 @@
         var offset = getOffset();
 
         function updateActive() {
-            var scrollPos = window.pageYOffset + offset + 50;
             var active = null;
+            var firstVisible = null;
+            var lastAbove = null;
+            var viewportTop = offset;
+            var viewportBottom = window.innerHeight;
 
             for (var i = 0; i < targets.length; i++) {
                 var t = targets[i];
-                var top = t.el.getBoundingClientRect().top + window.pageYOffset;
-                if (top <= scrollPos) {
-                    active = t;
-                } else {
-                    break;
+                var rect = t.el.getBoundingClientRect();
+                if (rect.top <= viewportTop && rect.bottom > viewportTop) {
+                    lastAbove = t;
+                }
+                if (rect.bottom >= viewportTop && rect.top <= viewportBottom) {
+                    if (!firstVisible) {
+                        firstVisible = t;
+                    }
                 }
             }
+
+            active = firstVisible || lastAbove || targets[targets.length - 1];
 
             links.forEach(function (link) { link.classList.remove('active'); });
             if (active) {
@@ -238,6 +246,10 @@
             lockPanelWidth(panel);
             panel.classList.add('et-open');
         }
+        if (typeof toc._etMobilePanelScrollHandler === 'function' && !toc._etMobilePanelScrolling) {
+            window.addEventListener('scroll', toc._etMobilePanelScrollHandler, { passive: true });
+            toc._etMobilePanelScrolling = true;
+        }
         var trigger = toc.querySelector('.elegant-toc-trigger');
         if (trigger) trigger.setAttribute('aria-expanded', 'true');
     }
@@ -250,6 +262,10 @@
             panel.classList.remove('et-open');
             panel.classList.add('et-closing');
             // visibility 会在 transitionend 回调中隐藏，避免内容闪烁；解锁在 transitionend 中处理
+        }
+        if (typeof toc._etMobilePanelScrollHandler === 'function' && toc._etMobilePanelScrolling) {
+            window.removeEventListener('scroll', toc._etMobilePanelScrollHandler, { passive: true });
+            toc._etMobilePanelScrolling = false;
         }
         toc.classList.remove('elegant-toc--mobile-open');
         var trigger = toc.querySelector('.elegant-toc-trigger');
@@ -270,6 +286,15 @@
         var viewportLimit = Math.max(0, window.innerHeight * 0.7);
         var panelMaxHeight = Math.min(availableHeight, viewportLimit);
         toc.style.setProperty('--et-mobile-panel-max-height', panelMaxHeight + 'px');
+
+        // 当目录面板已经打开时，额外保持面板随页面滚动/内容变化同步可见性
+        if (toc.classList.contains('elegant-toc--mobile-open')) {
+            var panel = toc.querySelector('.elegant-toc-panel');
+            if (panel) {
+                // 重新计算并刷新面板高度
+                panel.style.maxHeight = panelMaxHeight + 'px';
+            }
+        }
     }
 
     function initMobilePanel(toc) {
@@ -455,11 +480,18 @@
                 window.requestAnimationFrame(function () {
                     scrollPending = false;
                     updateSidebarVisibility(toc, contentContainer);
+                    updateMobilePanelHeight(toc);
                 });
             };
 
+            toc._etMobilePanelScrollHandler = throttle(function () {
+                updateMobilePanelHeight(toc);
+            }, 80);
+            toc._etMobilePanelScrolling = false;
+
             var onResize = throttle(function () {
                 updateSidebarVisibility(toc, contentContainer);
+                updateMobilePanelHeight(toc);
             }, 80);
 
             window.addEventListener('scroll', onScroll, { passive: true });
