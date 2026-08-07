@@ -45,6 +45,16 @@
     overflow: auto;
 }
 
+.elegant-toc-preview-frame .elegant-toc-panel {
+    max-height: 340px;
+    overflow: hidden;
+}
+
+.elegant-toc-preview-frame .elegant-toc-list {
+    max-height: calc(100% - 5rem);
+    overflow-y: auto;
+}
+
 .elegant-toc-admin .form-table th {
     width: 200px;
 }
