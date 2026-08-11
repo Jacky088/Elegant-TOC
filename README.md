@@ -81,15 +81,19 @@ add_filter('elegant_toc_post_types', function ($post_types) {
 
 ```
 elegant-toc/
-├── elegant-toc.php          # 主插件文件
+├── elegant-toc.php          # 主插件文件（核心逻辑）
+├── uninstall.php            # 卸载清理脚本
+├── composer.json            # Composer 配置
 ├── README.md                # 项目说明文档
 ├── .gitignore               # Git 忽略规则
 ├── assets/
 │   ├── style.css            # 前端样式
 │   ├── admin.css            # 后台设置页样式
 │   └── script.js            # 前端脚本
-└── admin/
-    └── settings-page.php    # 后台设置页面模板
+├── admin/
+│   └── settings-page.php    # 后台设置页面模板
+└── languages/
+    └── elegant-toc.pot      # 翻译模板
 ```
 
 ## 🛠️ 技术特性
@@ -101,6 +105,12 @@ elegant-toc/
 - 无障碍支持：ARIA 属性、焦点样式、键盘可访问
 
 ## 🔄 更新日志
+
+### 未发布
+- 修复：标题自带 HTML 锚点且重复时，目录链接与页面锚点不一致导致跳转错乱
+- 新增：`uninstall.php`，删除插件时清理设置与文章自定义字段（支持多站点）
+- 完善：后台设置页全部文案接入国际化，更新翻译模板至 1.8.0
+- 清理：移除未被加载的历史遗留代码与已失效的压缩资源文件
 
 ### 1.8.0 (2026-07-31)
 - 新增功能：用户可选择在文章、页面或自定义类型中显示目录

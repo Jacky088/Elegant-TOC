@@ -273,27 +273,6 @@ class Elegant_TOC {
     }
 
     /**
-     * 清除选项缓存
-     */
-    public function clear_options_cache() {
-        $this->cached_options = null;
-    }
-
-    /**
-     * 返回插件主文件路径
-     */
-    public function get_plugin_file() {
-        return __FILE__;
-    }
-
-    /**
-     * 返回 CSS 版本号
-     */
-    public function get_css_version() {
-        return $this->css_ver;
-    }
-
-    /**
      * 允许使用的色彩主题
      */
     public function get_allowed_color_themes() {
@@ -328,6 +307,21 @@ class Elegant_TOC {
 
             if (preg_match('/\sid=(["\'])([^"\']+)\1/i', $attrs, $im)) {
                 $id = $im[2];
+                // 原生 id 冲突时追加后缀，避免锚点重复导致跳转与高亮错乱
+                if (isset($used_ids[$id])) {
+                    $base = $id;
+                    $n    = 2;
+                    do {
+                        $id = $base . '-' . $n;
+                        $n++;
+                    } while (isset($used_ids[$id]));
+                    $attrs = preg_replace(
+                        '/(\sid=)(["\'])[^"\']+\2/i',
+                        '${1}"' . esc_attr($id) . '"',
+                        $attrs,
+                        1
+                    );
+                }
             } else {
                 $id = $this->unique_id($text, $used_ids);
                 $attrs = rtrim($attrs) . ' id="' . esc_attr($id) . '"';
@@ -496,7 +490,7 @@ class Elegant_TOC {
 
     public function add_admin_menu() {
         add_options_page(
-            'Elegant TOC 设置',
+            __('Elegant TOC 设置', 'elegant-toc'),
             'Elegant TOC',
             'manage_options',
             'elegant-toc',

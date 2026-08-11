@@ -190,25 +190,21 @@
 
         function updateActive() {
             var active = null;
-            var firstVisible = null;
             var lastAbove = null;
             var viewportTop = offset;
-            var viewportBottom = window.innerHeight;
 
+            // 当前阅读标题 = 最后一个"顶边已越过视口顶线(offset)"的标题。
+            // 以此为准（而非"整屏内第一个可见"），避免标题刚在屏幕底部露头就被提前高亮，
+            // 从而保证"浏览到标题 N 就高亮 N、回到标题 M 就高亮 M"与页面位置严格一致。
             for (var i = 0; i < targets.length; i++) {
                 var t = targets[i];
                 var rect = t.el.getBoundingClientRect();
-                if (rect.top <= viewportTop && rect.bottom > viewportTop) {
+                if (rect.top <= viewportTop) {
                     lastAbove = t;
-                }
-                if (rect.bottom >= viewportTop && rect.top <= viewportBottom) {
-                    if (!firstVisible) {
-                        firstVisible = t;
-                    }
                 }
             }
 
-            active = firstVisible || lastAbove || targets[targets.length - 1];
+            active = lastAbove || targets[0];
 
             links.forEach(function (link) {
                 link.classList.remove('active');
@@ -240,7 +236,7 @@
             }
         }
 
-        window.addEventListener('scroll', throttle(updateActive, 80), { passive: true });
+        window.addEventListener('scroll', throttle(updateActive, 50), { passive: true });
         window.addEventListener('resize', debounce(updateActive, 150));
         updateActive();
     }
@@ -252,10 +248,12 @@
         if (panel) {
             panel.style.visibility = 'visible';
             panel.classList.remove('et-closing');
-            // 解除旧的宽度限制，重新计算打开时的宽度并锁定，防止关闭/打开动画中宽度跳变
-            unlockPanelWidth(panel);
-            void panel.offsetWidth;
-            lockPanelWidth(panel);
+            // 移动端面板使用百分比宽度（calc），无需锁定像素宽度；
+            // 锁定会在动画结束后解锁，导致从像素回归百分比的瞬间跳变（闪动）。
+            // 只有侧边栏（固定像素宽度）才需要锁定逻辑。
+            if (!toc.classList.contains('elegant-toc--sidebar')) {
+                unlockPanelWidth(panel);
+            }
             panel.classList.add('et-open');
         }
         if (typeof toc._etMobilePanelScrollHandler === 'function' && !toc._etMobilePanelScrolling) {
@@ -269,16 +267,22 @@
     function closeMobilePanel(toc) {
         var panel = toc.querySelector('.elegant-toc-panel');
         if (panel) {
-            // 在开始关闭动画前锁定当前宽度，避免滚动条或内容变化导致宽度跳变
-            lockPanelWidth(panel);
+            // 移动端面板为百分比宽度，不锁定像素宽度（避免解锁时的瞬间跳变）；
+            // 仅在侧边栏模式下才需要锁定逻辑。
+            if (toc.classList.contains('elegant-toc--sidebar')) {
+                lockPanelWidth(panel);
+            }
             panel.classList.remove('et-open');
             panel.classList.add('et-closing');
-            // visibility 会在 transitionend 回调中隐藏，避免内容闪烁；解锁在 transitionend 中处理
+            // visibility 会在 transitionend 回调中隐藏，避免内容闪烁
         }
         if (typeof toc._etMobilePanelScrollHandler === 'function' && toc._etMobilePanelScrolling) {
             window.removeEventListener('scroll', toc._etMobilePanelScrollHandler, { passive: true });
             toc._etMobilePanelScrolling = false;
         }
+        // 关闭瞬间即可移除 mobile-open：宽度跳变已由 CSS 的 .et-closing 宽度规则兜底，
+        // 不再依赖延迟移除。这样 et-closing 的 opacity:0 不会被 mobile-open 的
+        // opacity:1 覆盖，关闭淡出动画才能立即、流畅地播放。
         toc.classList.remove('elegant-toc--mobile-open');
         var trigger = toc.querySelector('.elegant-toc-trigger');
         if (trigger) trigger.setAttribute('aria-expanded', 'false');
@@ -397,8 +401,10 @@
 
         var headerOffset = getOffset();
 
-        // 目录顶部与正文第一个内容元素顶端对齐，并随滚动同步
-        var tocTop = Math.max(refRect.top, headerOffset + 30);
+        // 目录顶部与正文第一个内容元素顶端对齐，并随滚动同步。
+        // 注意：偏移量必须与 updateSidebarVisibility 中的 headerOffset + 20 保持一致，
+        // 否则激活侧边栏后第一次滚动会造成目录面板瞬间上/下跳 10px（跟随起点不一致）。
+        var tocTop = Math.max(refRect.top, headerOffset + 20);
         var tocLeft = Math.max(minLeftSpace, refRect.left - tocWidth - gap);
 
         // 尾部边界：目录面板高度只依据文章容器底部，不以整个浏览器页面为准
@@ -441,26 +447,29 @@
         if (!toc.classList.contains('elegant-toc--sidebar')) return;
         var refEl = toc.nextElementSibling || contentContainer;
         if (!refEl) return;
+
+        // 批量读取，避免 读-写-读 交错导致的布局抖动（layout thrashing）
+        var headerOffset = getOffset();
         var refRect = refEl.getBoundingClientRect();
         var contentRect = contentContainer.getBoundingClientRect();
         var inView = contentRect.bottom > 0 && contentRect.top < window.innerHeight;
 
-        // 滚动过程中同步目录顶部与正文可见区域顶端，保持"紧贴正文"
-        var headerOffset = getOffset();
         var tocTop = Math.max(refRect.top, headerOffset + 20);
-        toc.style.setProperty('--et-sidebar-top', tocTop + 'px');
-
-        // 尾部边界更新：保持目录面板只在文章容器范围内可见
         var contentBottom = contentRect.bottom;
-        var panelBottomLimit = contentBottom - 20;
-        var sidebarMaxHeight = Math.max(0, panelBottomLimit - tocTop);
+        var sidebarMaxHeight = Math.max(0, (contentBottom - 20) - tocTop);
+
+        // 统一写入（一次写，不再穿插读取 panel 高度）
+        toc.style.setProperty('--et-sidebar-top', tocTop + 'px');
         toc.style.setProperty('--et-sidebar-max-height', sidebarMaxHeight + 'px');
 
-        var panel = toc.querySelector('.elegant-toc-panel');
-        var panelHeight = panel ? panel.getBoundingClientRect().height : 0;
-        var panelBottom = tocTop + panelHeight;
-        var prematureHideThreshold = 48; // 距离文章底部多少像素开始淡出
-        var tooCloseToBottom = panelBottom > contentBottom - prematureHideThreshold;
+        // 仅在可见区域内时读取面板高度，判断是否过早贴近文章底部
+        var tooCloseToBottom = false;
+        if (inView) {
+            var panel = toc.querySelector('.elegant-toc-panel');
+            var panelHeight = panel ? panel.getBoundingClientRect().height : 0;
+            var prematureHideThreshold = 48; // 距离文章底部多少像素开始淡出
+            tooCloseToBottom = (tocTop + panelHeight) > contentBottom - prematureHideThreshold;
+        }
 
         if (!inView || tooCloseToBottom) {
             toc.classList.add('elegant-toc--hidden');
@@ -486,20 +495,24 @@
 
         var contentContainer = toc.parentElement;
         if (contentContainer) {
+            // 滚动中仅做必要的实时更新；移动端面板高度在滚动中不变，
+            // 放到滚动停止后（scrollEnd）再重算，避免每帧强制 reflow 造成卡顿。
             var scrollPending = false;
             var onScroll = function () {
                 if (scrollPending) return;
                 scrollPending = true;
                 window.requestAnimationFrame(function () {
                     scrollPending = false;
+                    // 侧边栏模式需要随滚动同步顶部/尾部边界
                     updateSidebarVisibility(toc, contentContainer);
-                    updateMobilePanelHeight(toc);
                 });
             };
 
-            toc._etMobilePanelScrollHandler = throttle(function () {
+            // 滚动停止后补算移动端面板高度（滑到文章尾部时的收缩需求）
+            var onScrollEnd = debounce(function () {
                 updateMobilePanelHeight(toc);
-            }, 80);
+            }, 120);
+            toc._etMobilePanelScrollHandler = onScrollEnd;
             toc._etMobilePanelScrolling = false;
 
             var onResize = throttle(function () {
@@ -508,6 +521,7 @@
             }, 80);
 
             window.addEventListener('scroll', onScroll, { passive: true });
+            window.addEventListener('scroll', onScrollEnd, { passive: true });
             window.addEventListener('resize', onResize, { passive: true });
         }
     }

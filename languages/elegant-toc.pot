@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: Elegant TOC 1.7.0\n"
+"Project-Id-Version: Elegant TOC 1.8.0\n"
 "Report-Msgid-Bugs-To: https://github.com/Jacky088/Elegant-TOC/issues\n"
-"POT-Creation-Date: 2026-07-31 12:00+0000\n"
+"POT-Creation-Date: 2026-08-11 12:00+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -10,47 +10,167 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"X-Domain: elegant-toc\n"
 
-#: elegant-toc.php:100
-msgid "权限不足"
-msgstr ""
-
-#: elegant-toc.php:200
+#. 前台目录
+#: elegant-toc.php
 msgid "文章目录"
 msgstr ""
 
-#: elegant-toc.php:205
+#: elegant-toc.php
 msgid "打开目录"
 msgstr ""
 
-#: elegant-toc.php:210
+#: elegant-toc.php
 msgid "折叠目录"
 msgstr ""
 
-#: elegant-toc.php:215
+#: elegant-toc.php
 msgid "关闭目录"
 msgstr ""
 
-#: elegant-toc.php:220
-msgid "搜索目录..."
-msgstr ""
-
-#: elegant-toc.php:225
-msgid "搜索目录"
-msgstr ""
-
-#: elegant-toc.php:230
+#: elegant-toc.php
 msgid "跳转到："
 msgstr ""
 
-#: admin/settings-page.php:10
+#. 文章编辑页元数据框
+#: elegant-toc.php
+msgid "Elegant TOC"
+msgstr ""
+
+#: elegant-toc.php
 msgid "在此文章/页面中禁用目录"
 msgstr ""
 
-#: admin/settings-page.php:15
+#: elegant-toc.php
 msgid "勾选后，本文将不会自动显示 Elegant TOC 目录。"
 msgstr ""
 
-#: admin/settings-page.php:25
+#. 后台菜单与插件列表
+#: elegant-toc.php
+msgid "Elegant TOC 设置"
+msgstr ""
+
+#: elegant-toc.php
 msgid "设置"
+msgstr ""
+
+#. 设置页：基本设置
+#: admin/settings-page.php
+msgid "基本设置"
+msgstr ""
+
+#: admin/settings-page.php
+msgid "启用目录"
+msgstr ""
+
+#: admin/settings-page.php
+msgid "在文章中自动显示目录"
+msgstr ""
+
+#: admin/settings-page.php
+msgid "显示位置"
+msgstr ""
+
+#: admin/settings-page.php
+msgid "选择在哪些内容类型中显示目录"
+msgstr ""
+
+#: admin/settings-page.php
+msgid "默认勾选“文章”和“页面”"
+msgstr ""
+
+#: admin/settings-page.php
+msgid "最少标题数"
+msgstr ""
+
+#: admin/settings-page.php
+msgid "当文章标题数量少于此值时，不显示目录"
+msgstr ""
+
+#. 设置页：标题层级
+#: admin/settings-page.php
+msgid "标题层级"
+msgstr ""
+
+#: admin/settings-page.php
+msgid "选择要包含在目录中的标题层级"
+msgstr ""
+
+#: admin/settings-page.php
+msgid "包含层级"
+msgstr ""
+
+#: admin/settings-page.php
+msgid "H2（主标题）"
+msgstr ""
+
+#: admin/settings-page.php
+msgid "H3（二级标题）"
+msgstr ""
+
+#: admin/settings-page.php
+msgid "H4（三级标题）"
+msgstr ""
+
+#: admin/settings-page.php
+msgid "H5（四级标题）"
+msgstr ""
+
+#: admin/settings-page.php
+msgid "H6（五级标题）"
+msgstr ""
+
+#. 设置页：个性化配色
+#: admin/settings-page.php
+msgid "个性化配色"
+msgstr ""
+
+#: admin/settings-page.php
+msgid "选择目录的主色调，按钮、背景、边框等会同步更换"
+msgstr ""
+
+#: admin/settings-page.php
+msgid "色彩主题"
+msgstr ""
+
+#: admin/settings-page.php
+msgid "跟随系统"
+msgstr ""
+
+#: admin/settings-page.php
+msgid "浅灰（默认）"
+msgstr ""
+
+#: admin/settings-page.php
+msgid "清新蓝"
+msgstr ""
+
+#: admin/settings-page.php
+msgid "自然绿"
+msgstr ""
+
+#: admin/settings-page.php
+msgid "优雅紫"
+msgstr ""
+
+#: admin/settings-page.php
+msgid "活力橙"
+msgstr ""
+
+#: admin/settings-page.php
+msgid "暗夜黑"
+msgstr ""
+
+#. 设置页：预览与提交
+#: admin/settings-page.php
+msgid "预览效果"
+msgstr ""
+
+#: admin/settings-page.php
+msgid "这是目录的外观预览，选择配色后可实时查看效果"
+msgstr ""
+
+#: admin/settings-page.php
+msgid "保存设置"
 msgstr ""

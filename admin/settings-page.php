@@ -9,23 +9,23 @@
             ?>
 
             <div class="elegant-toc-section">
-                <h2>基本设置</h2>
+                <h2><?php esc_html_e('基本设置', 'elegant-toc'); ?></h2>
 
                 <table class="form-table">
                     <tr>
-                        <th scope="row">启用目录</th>
+                        <th scope="row"><?php esc_html_e('启用目录', 'elegant-toc'); ?></th>
                         <td>
                             <label>
                                 <input type="checkbox" name="elegant_toc_options[enabled]" value="1" <?php checked($options['enabled'], true); ?> />
-                                在文章中自动显示目录
+                                <?php esc_html_e('在文章中自动显示目录', 'elegant-toc'); ?>
                             </label>
                         </td>
                     </tr>
 
                     <tr>
-                        <th scope="row">显示位置</th>
+                        <th scope="row"><?php esc_html_e('显示位置', 'elegant-toc'); ?></th>
                         <td>
-                            <p class="description" style="margin-top: 0; margin-bottom: 10px;">选择在哪些内容类型中显示目录</p>
+                            <p class="description" style="margin-top: 0; margin-bottom: 10px;"><?php esc_html_e('选择在哪些内容类型中显示目录', 'elegant-toc'); ?></p>
                             <?php
                             // 获取所有公开的文章类型
                             $post_types = get_post_types(array('public' => true), 'objects');
@@ -44,15 +44,15 @@
                                     <span style="color: #666; font-size: 0.9em;">(<?php echo esc_html($post_type->name); ?>)</span>
                                 </label>
                             <?php endforeach; ?>
-                            <p class="description">默认勾选"文章"和"页面"</p>
+                            <p class="description"><?php esc_html_e('默认勾选“文章”和“页面”', 'elegant-toc'); ?></p>
                         </td>
                     </tr>
 
                     <tr>
-                        <th scope="row">最少标题数</th>
+                        <th scope="row"><?php esc_html_e('最少标题数', 'elegant-toc'); ?></th>
                         <td>
                             <input type="number" name="elegant_toc_options[min_headings]" value="<?php echo esc_attr($options['min_headings']); ?>" min="1" max="10" class="small-text" />
-                            <p class="description">当文章标题数量少于此值时，不显示目录</p>
+                            <p class="description"><?php esc_html_e('当文章标题数量少于此值时，不显示目录', 'elegant-toc'); ?></p>
                         </td>
                     </tr>
 
@@ -60,36 +60,36 @@
             </div>
 
             <div class="elegant-toc-section">
-                <h2>标题层级</h2>
-                <p class="description">选择要包含在目录中的标题层级</p>
+                <h2><?php esc_html_e('标题层级', 'elegant-toc'); ?></h2>
+                <p class="description"><?php esc_html_e('选择要包含在目录中的标题层级', 'elegant-toc'); ?></p>
 
                 <table class="form-table">
                     <tr>
-                        <th scope="row">包含层级</th>
+                        <th scope="row"><?php esc_html_e('包含层级', 'elegant-toc'); ?></th>
                         <td>
                             <label>
                                 <input type="checkbox" name="elegant_toc_options[heading_levels][]" value="h2" <?php checked(in_array('h2', $options['heading_levels'])); ?> />
-                                H2 (主标题)
+                                <?php esc_html_e('H2（主标题）', 'elegant-toc'); ?>
                             </label>
                             <br>
                             <label>
                                 <input type="checkbox" name="elegant_toc_options[heading_levels][]" value="h3" <?php checked(in_array('h3', $options['heading_levels'])); ?> />
-                                H3 (二级标题)
+                                <?php esc_html_e('H3（二级标题）', 'elegant-toc'); ?>
                             </label>
                             <br>
                             <label>
                                 <input type="checkbox" name="elegant_toc_options[heading_levels][]" value="h4" <?php checked(in_array('h4', $options['heading_levels'])); ?> />
-                                H4 (三级标题)
+                                <?php esc_html_e('H4（三级标题）', 'elegant-toc'); ?>
                             </label>
                             <br>
                             <label>
                                 <input type="checkbox" name="elegant_toc_options[heading_levels][]" value="h5" <?php checked(in_array('h5', $options['heading_levels'])); ?> />
-                                H5 (四级标题)
+                                <?php esc_html_e('H5（四级标题）', 'elegant-toc'); ?>
                             </label>
                             <br>
                             <label>
                                 <input type="checkbox" name="elegant_toc_options[heading_levels][]" value="h6" <?php checked(in_array('h6', $options['heading_levels'])); ?> />
-                                H6 (五级标题)
+                                <?php esc_html_e('H6（五级标题）', 'elegant-toc'); ?>
                             </label>
                         </td>
                     </tr>
@@ -97,23 +97,23 @@
             </div>
 
             <div class="elegant-toc-section">
-                <h2>个性化配色</h2>
-                <p class="description">选择目录的主色调，按钮、背景、边框等会同步更换</p>
+                <h2><?php esc_html_e('个性化配色', 'elegant-toc'); ?></h2>
+                <p class="description"><?php esc_html_e('选择目录的主色调，按钮、背景、边框等会同步更换', 'elegant-toc'); ?></p>
 
                 <table class="form-table">
                     <tr>
-                        <th scope="row">色彩主题</th>
+                        <th scope="row"><?php esc_html_e('色彩主题', 'elegant-toc'); ?></th>
                         <td>
                             <div class="elegant-toc-color-options">
                                 <?php
                                 $themes = array(
-                                    'auto'   => array('label' => '跟随系统', 'color' => 'linear-gradient(135deg, #f3f4f6 50%, #1f2937 50%)', 'text' => '#374151'),
-                                    'light'  => array('label' => '浅灰（默认）', 'color' => '#f3f4f6', 'text' => '#374151'),
-                                    'blue'   => array('label' => '清新蓝', 'color' => '#dbeafe', 'text' => '#1e40af'),
-                                    'green'  => array('label' => '自然绿', 'color' => '#dcfce7', 'text' => '#166534'),
-                                    'purple' => array('label' => '优雅紫', 'color' => '#f3e8ff', 'text' => '#7e22ce'),
-                                    'orange' => array('label' => '活力橙', 'color' => '#ffedd5', 'text' => '#9a3412'),
-                                    'dark'   => array('label' => '暗夜黑', 'color' => '#1f2937', 'text' => '#f3f4f6'),
+                                    'auto'   => array('label' => __('跟随系统', 'elegant-toc'), 'color' => 'linear-gradient(135deg, #f3f4f6 50%, #1f2937 50%)', 'text' => '#374151'),
+                                    'light'  => array('label' => __('浅灰（默认）', 'elegant-toc'), 'color' => '#f3f4f6', 'text' => '#374151'),
+                                    'blue'   => array('label' => __('清新蓝', 'elegant-toc'), 'color' => '#dbeafe', 'text' => '#1e40af'),
+                                    'green'  => array('label' => __('自然绿', 'elegant-toc'), 'color' => '#dcfce7', 'text' => '#166534'),
+                                    'purple' => array('label' => __('优雅紫', 'elegant-toc'), 'color' => '#f3e8ff', 'text' => '#7e22ce'),
+                                    'orange' => array('label' => __('活力橙', 'elegant-toc'), 'color' => '#ffedd5', 'text' => '#9a3412'),
+                                    'dark'   => array('label' => __('暗夜黑', 'elegant-toc'), 'color' => '#1f2937', 'text' => '#f3f4f6'),
                                 );
                                 $current_theme = !empty($options['color_theme']) ? $options['color_theme'] : 'light';
                                 foreach ($themes as $theme_key => $theme_data) :
@@ -131,8 +131,8 @@
             </div>
 
             <div class="elegant-toc-preview">
-                <h2>预览效果</h2>
-                <p class="description">这是目录的外观预览，选择配色后可实时查看效果</p>
+                <h2><?php esc_html_e('预览效果', 'elegant-toc'); ?></h2>
+                <p class="description"><?php esc_html_e('这是目录的外观预览，选择配色后可实时查看效果', 'elegant-toc'); ?></p>
 
                 <div class="elegant-toc-preview-frame">
                     <nav class="elegant-toc" id="elegant-toc" style="position: relative; top: 0; left: 0; bottom: auto; max-width: 100%;"<?php echo ('auto' !== $current_theme) ? ' data-et-theme="' . esc_attr($current_theme) . '"' : ''; ?>>
@@ -150,9 +150,9 @@
                                         <line x1="3" y1="18" x2="3.01" y2="18"></line>
                                     </svg>
                                 </span>
-                                <span class="elegant-toc-title">文章目录</span>
+                                <span class="elegant-toc-title"><?php esc_html_e('文章目录', 'elegant-toc'); ?></span>
                             </div>
-                            <button type="button" class="elegant-toc-toggle" aria-label="折叠目录" aria-expanded="true">
+                            <button type="button" class="elegant-toc-toggle" aria-label="<?php esc_attr_e('折叠目录', 'elegant-toc'); ?>" aria-expanded="true">
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                     <polyline points="18 15 12 9 6 15"></polyline>
                                 </svg>
@@ -195,7 +195,7 @@
                 </div>
             </div>
 
-            <?php submit_button('保存设置', 'primary', 'elegant_toc_submit'); ?>
+            <?php submit_button(__('保存设置', 'elegant-toc'), 'primary', 'elegant_toc_submit'); ?>
         </form>
     </div>
 </div>

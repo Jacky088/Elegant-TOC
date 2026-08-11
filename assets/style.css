@@ -165,7 +165,11 @@ html { scroll-behavior: smooth; }
   width: 260px;
   max-width: calc(100vw - 40px);
   max-height: var(--et-panel-max-height, 70vh);
+  /* 外层面板只负责整体定位与裁切，不允许出现自身滚动条；
+     滚动只交给内部 .elegant-toc-list */
   overflow: hidden;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
   font-size: 0.9375rem;
   line-height: 1.6;
   color: var(--et-text);
@@ -175,6 +179,10 @@ html { scroll-behavior: smooth; }
   -webkit-backdrop-filter: blur(10px) saturate(120%);
   /* 关键：让目录整体字号跟随文章正文 */
   font-size: var(--et-base-font-size);
+}
+
+#elegant-toc .elegant-toc-panel::-webkit-scrollbar {
+  display: none;
 }
 
 /* 打开时显式类，便于 JS 控制进入/离开动画 */
@@ -189,6 +197,9 @@ html { scroll-behavior: smooth; }
   opacity: 0;
   transform: translateY(8px) scale(0.99);
   pointer-events: none;
+  /* 关闭瞬间维持移动端宽度，避免移除 mobile-open 后回退到基础态 260px 造成跳变 */
+  width: calc(50% - 20px);
+  max-width: 240px;
 }
 
 /* ---------- 移动端展开：底部浮层面板 ---------- */

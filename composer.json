@@ -11,14 +11,8 @@
     "phpunit/phpunit": "^9.5",
     "wp-coding-standards/wpcs": "^2.3"
   },
-  "autoload": {
-    "classmap": [
-      "includes/"
-    ]
-  },
   "scripts": {
-    "test": "phpunit",
-    "phpcs": "phpcs --standard=WordPress elegant-toc.php includes/",
-    "phpcbf": "phpcbf --standard=WordPress elegant-toc.php includes/"
+    "phpcs": "phpcs --standard=WordPress elegant-toc.php",
+    "phpcbf": "phpcbf --standard=WordPress elegant-toc.php"
   }
 }
