@@ -3,7 +3,7 @@
  * Plugin Name: Elegant TOC
  * Plugin URI: https://github.com/Jacky088/Elegant-TOC
  * Description: 优雅的文章目录插件，自动生成美观的文章目录，支持平滑滚动和高亮显示
- * Version: 1.8.0
+ * Version: 1.9.0
  * Author: 木木
  * Author URI: https://github.com/Jacky088/Elegant-TOC
  * License: GPL v2 or later
@@ -16,7 +16,7 @@ if (!defined('ABSPATH')) {
 
 class Elegant_TOC {
     private static $instance = null;
-    const VERSION = '1.8.0';
+    const VERSION = '1.9.0';
 
     /** 缓存的资源版本号（含 filemtime） */
     private $css_ver = '';
@@ -24,6 +24,9 @@ class Elegant_TOC {
 
     /** insert_toc 是否已执行 */
     private $toc_inserted = false;
+
+    /** 短代码传入的自定义标题（若有），供 generate_toc 使用 */
+    private $shortcode_title = null;
 
     /** 缓存的选项数据，避免重复查询数据库 */
     private $cached_options = null;
@@ -206,6 +209,9 @@ class Elegant_TOC {
 
         $toc = $this->generate_toc($headings);
 
+        // 标题用完即清，避免在多文章循环中串用
+        $this->shortcode_title = null;
+
         // 如果内容中包含短代码，则替换短代码位置
         if ($has_shortcode) {
             return $this->replace_shortcode_once($content, $toc);
@@ -220,12 +226,23 @@ class Elegant_TOC {
      * 直接调用时返回一个占位符，保证在 RSS/Feed 等场景也有合理输出。
      */
     public function render_shortcode($attrs = array(), $_content = '') {
+        // 在 Feed/RSS 中不输出占位符：insert_toc 会在 is_feed() 时提前退出，
+        // 否则这里的占位 div 会原样泄露到订阅源
+        if (is_feed()) {
+            return '';
+        }
+
         $attrs = shortcode_atts(array(
             'title' => __('文章目录', 'elegant-toc'),
         ), $attrs, 'elegant_toc');
 
         // 清理属性值，防止 XSS
         $title = sanitize_text_field($attrs['title']);
+
+        // 记录自定义标题，供 insert_toc / generate_toc 使用
+        if ($title !== '') {
+            $this->shortcode_title = $title;
+        }
 
         // 块状占位符，避免被 wpautop 包裹在 <p> 中
         return '<div class="elegant-toc-placeholder" aria-hidden="true"></div>';
@@ -361,6 +378,7 @@ class Elegant_TOC {
     private function generate_toc($headings) {
         $options = $this->get_options();
         $theme   = !empty($options['color_theme']) ? sanitize_text_field($options['color_theme']) : 'light';
+        $title   = !empty($this->shortcode_title) ? $this->shortcode_title : __('文章目录', 'elegant-toc');
 
         $toc  = '<!-- Elegant TOC v' . esc_html(self::VERSION) . ' -->';
         $toc .= '<nav class="elegant-toc" id="elegant-toc"';
@@ -368,10 +386,10 @@ class Elegant_TOC {
         if ('auto' !== $theme) {
             $toc .= ' data-et-theme="' . esc_attr($theme) . '"';
         }
-        $toc .= ' aria-label="' . esc_attr__('文章目录', 'elegant-toc') . '">';
+        $toc .= ' aria-label="' . esc_attr($title) . '">';
 
         // 移动端触发按钮（小屏时悬浮在左下角）
-        $toc .= '<button type="button" class="elegant-toc-trigger" aria-label="' . esc_attr__('打开目录', 'elegant-toc') . '" title="' . esc_attr__('文章目录', 'elegant-toc') . '" data-tooltip="' . esc_attr__('文章目录', 'elegant-toc') . '" aria-expanded="false">';
+        $toc .= '<button type="button" class="elegant-toc-trigger" aria-label="' . esc_attr__('打开目录', 'elegant-toc') . '" title="' . esc_attr($title) . '" data-tooltip="' . esc_attr($title) . '" aria-expanded="false">';
         $toc .= '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:block;">';
         $toc .= '<line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="18" x2="21" y2="18"></line>';
         $toc .= '</svg>';
@@ -392,7 +410,7 @@ class Elegant_TOC {
         $toc .= '<line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line>';
         $toc .= '</svg></span>';
 
-        $toc .= '<span class="elegant-toc-title">' . esc_html__('文章目录', 'elegant-toc') . '</span>';
+        $toc .= '<span class="elegant-toc-title">' . esc_html($title) . '</span>';
         $toc .= '</div>';
 
         // 折叠按钮

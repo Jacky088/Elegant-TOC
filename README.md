@@ -2,7 +2,7 @@
 
 一个现代、轻量、自适应的 WordPress 文章目录插件，自动生成美观的目录，支持平滑滚动、智能高亮和丰富的个性化配置。
 
-![Version](https://img.shields.io/badge/version-1.8.0-blue.svg)
+![Version](https://img.shields.io/badge/version-1.9.0-blue.svg)
 ![WordPress](https://img.shields.io/badge/wordpress-5.0%2B-blue.svg)
 ![License](https://img.shields.io/badge/license-GPL%20v2-green.svg)
 
@@ -106,11 +106,20 @@ elegant-toc/
 
 ## 🔄 更新日志
 
-### 未发布
+### 1.9.0
 - 修复：标题自带 HTML 锚点且重复时，目录链接与页面锚点不一致导致跳转错乱
 - 新增：`uninstall.php`，删除插件时清理设置与文章自定义字段（支持多站点）
-- 完善：后台设置页全部文案接入国际化，更新翻译模板至 1.8.0
+- 完善：后台设置页全部文案接入国际化，更新翻译模板至 1.9.0
 - 清理：移除未被加载的历史遗留代码与已失效的压缩资源文件
+- 修复：深色模式下目录面板与触发按钮背景对比度不足
+- 修复：RSS 订阅源中短代码占位符泄漏到正文
+- 新增：短代码 `[elegant_toc title="自定义标题"]` 可自定义目录标题
+- 新增：移动端目录面板打开时，下滑滑出文章尾部后自动收起回按钮态
+- 优化：滚动偏移量计算结果缓存，resize 时失效重算，减少布局抖动
+- 优化：移动端面板宽度抽取为 CSS 变量，视口判断改用 clientWidth 与 @media 同口径
+- 优化：合并重复的 resize 处理器为单一节流函数
+- 优化：目录面板与触发按钮加强毛玻璃（backdrop-filter）效果，降低背景不透明度
+- 优化：回到首标题的高亮提示改为跟随主题色，并增强提示动画的醒目度
 
 ### 1.8.0
 - 新增功能：用户可选择在文章、页面或自定义类型中显示目录

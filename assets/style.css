@@ -27,6 +27,10 @@ html { scroll-behavior: smooth; }
   --et-base-font-size: 1rem;
   --et-panel-max-lines: 16;
   --et-panel-line-height: 1.45;
+  /* 移动端浮层面板宽度：仅在 <520px 屏幕时 50% 生效，其余被 max-width 盖住。
+     抽成变量，供 .et-closing 与 .elegant-toc--mobile-open 两处共用，避免硬编码同步。 */
+  --et-mobile-panel-width: calc(50% - 20px);
+  --et-mobile-panel-max-width: 240px;
 
   all: initial;
   display: block;
@@ -54,10 +58,12 @@ html { scroll-behavior: smooth; }
   width: 56px;
   height: 56px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+  background: linear-gradient(135deg, rgba(255,255,255,0.78) 0%, rgba(248,249,250,0.72) 100%);
   border: 1px solid rgba(0, 0, 0, 0.08);
   color: var(--et-text);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.06);
+  backdrop-filter: blur(8px) saturate(120%);
+  -webkit-backdrop-filter: blur(8px) saturate(120%);
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   appearance: none;
@@ -81,7 +87,7 @@ html { scroll-behavior: smooth; }
 #elegant-toc .elegant-toc-trigger:hover {
   transform: translateY(-2px) scale(1.05);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15), 0 2px 6px rgba(0, 0, 0, 0.08);
-  background: linear-gradient(135deg, #ffffff 0%, #fafbfc 100%);
+  background: linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(250,251,252,0.85) 100%);
   border-color: rgba(0, 0, 0, 0.12);
 }
 
@@ -158,7 +164,7 @@ html { scroll-behavior: smooth; }
               transform 300ms cubic-bezier(.22,1,.36,1);
   will-change: transform, opacity;
 
-  background: linear-gradient(180deg, rgba(255,255,255,0.9) 0%, rgba(250,250,252,0.85) 100%);
+  background: linear-gradient(180deg, rgba(255,255,255,0.78) 0%, rgba(250,250,252,0.72) 100%);
   border: 1px solid rgba(17,24,39,0.06);
   border-radius: calc(var(--et-radius) + 2px);
   padding: 1.25rem 1.35rem;
@@ -198,8 +204,8 @@ html { scroll-behavior: smooth; }
   transform: translateY(8px) scale(0.99);
   pointer-events: none;
   /* 关闭瞬间维持移动端宽度，避免移除 mobile-open 后回退到基础态 260px 造成跳变 */
-  width: calc(50% - 20px);
-  max-width: 240px;
+  width: var(--et-mobile-panel-width);
+  max-width: var(--et-mobile-panel-max-width);
 }
 
 /* ---------- 移动端展开：底部浮层面板 ---------- */
@@ -212,8 +218,8 @@ html { scroll-behavior: smooth; }
 #elegant-toc.elegant-toc--mobile-open .elegant-toc-panel {
   left: 20px;
   bottom: 88px;
-  width: calc(50% - 20px);
-  max-width: 240px;
+  width: var(--et-mobile-panel-width);
+  max-width: var(--et-mobile-panel-max-width);
   max-height: min(var(--et-mobile-panel-max-height, 70vh), 70vh);
   overflow: hidden;
   /* 确保 JS 会加上 .et-open 类来触发统一的动画 */
@@ -229,7 +235,7 @@ html { scroll-behavior: smooth; }
 
 @media (min-width: 600px) and (max-width: 1023px) {
   #elegant-toc.elegant-toc--mobile-open .elegant-toc-panel {
-    max-width: 240px;
+    max-width: var(--et-mobile-panel-max-width);
     padding: 1.25rem 1.5rem;
     font-size: var(--et-base-font-size);
   }
@@ -504,8 +510,11 @@ html { scroll-behavior: smooth; }
 }
 
 #elegant-toc .elegant-toc-link.et-top-highlight {
-  background: rgba(253, 230, 138, 0.4);
-  animation: etTopHighlight 1.2s ease;
+  /* 跟随主题：主题强调色与 active-bg 混合的浅底，替代硬编码琥珀色；
+     低占比（18%）保证正文文字可读。不支持 color-mix 的浏览器降级回琥珀色。 */
+  background-color: rgba(253, 230, 138, 0.25);
+  background-color: color-mix(in srgb, var(--et-accent) 18%, var(--et-active-bg));
+  animation: etTopHighlight 1.5s cubic-bezier(.22, 1, .36, 1);
 }
 #elegant-toc .elegant-toc-link.et-top-highlight .elegant-toc-bullet {
   background: var(--et-accent);
@@ -513,9 +522,14 @@ html { scroll-behavior: smooth; }
 }
 
 @keyframes etTopHighlight {
-  0% { background: rgba(253, 230, 138, 0.65); }
-  50% { background: rgba(253, 230, 138, 0.35); }
-  100% { background: rgba(253, 230, 138, 0.1); }
+  0% {
+    background-color: rgba(253, 230, 138, 0.75);
+    background-color: color-mix(in srgb, var(--et-accent) 75%, var(--et-active-bg));
+  }
+  100% {
+    background-color: rgba(253, 230, 138, 0.25);
+    background-color: color-mix(in srgb, var(--et-accent) 18%, var(--et-active-bg));
+  }
 }
 
 #elegant-toc .elegant-toc-text {
@@ -659,4 +673,49 @@ html.dark #elegant-toc.elegant-toc {
   #elegant-toc .elegant-toc-panel {
     transition: none;
   }
+}
+
+/* ---------- 深色模式：面板/触发按钮背景适配 ----------
+   .elegant-toc-panel 与 .elegant-toc-trigger 的背景写死为白色渐变，
+   而深色主题把 --et-text 改为浅色，导致浅色文字打在白色面板上不可读。
+   仅在深色上下文覆盖背景，浅色/彩色主题保持不变。
+   ----------------------------------------------------------- */
+@media (prefers-color-scheme: dark) {
+  #elegant-toc.elegant-toc .elegant-toc-panel {
+    background: linear-gradient(180deg, rgba(26,26,26,0.82) 0%, rgba(18,18,18,0.8) 100%);
+  }
+  #elegant-toc.elegant-toc .elegant-toc-trigger {
+    background: linear-gradient(135deg, rgba(40,40,40,0.82) 0%, rgba(26,26,26,0.8) 100%);
+    border-color: rgba(255,255,255,0.12);
+  }
+  #elegant-toc.elegant-toc .elegant-toc-trigger:hover {
+    background: linear-gradient(135deg, rgba(50,50,50,0.92) 0%, rgba(33,33,33,0.9) 100%);
+    border-color: rgba(255,255,255,0.18);
+  }
+}
+
+body.dark-mode #elegant-toc.elegant-toc .elegant-toc-panel,
+body[data-theme="dark"] #elegant-toc.elegant-toc .elegant-toc-panel,
+.dark #elegant-toc.elegant-toc .elegant-toc-panel,
+html.dark #elegant-toc.elegant-toc .elegant-toc-panel,
+#elegant-toc.elegant-toc.elegant-toc[data-et-theme="dark"] .elegant-toc-panel {
+  background: linear-gradient(180deg, rgba(26,26,26,0.82) 0%, rgba(18,18,18,0.8) 100%);
+}
+
+body.dark-mode #elegant-toc.elegant-toc .elegant-toc-trigger,
+body[data-theme="dark"] #elegant-toc.elegant-toc .elegant-toc-trigger,
+.dark #elegant-toc.elegant-toc .elegant-toc-trigger,
+html.dark #elegant-toc.elegant-toc .elegant-toc-trigger,
+#elegant-toc.elegant-toc.elegant-toc[data-et-theme="dark"] .elegant-toc-trigger {
+  background: linear-gradient(135deg, rgba(40,40,40,0.82) 0%, rgba(26,26,26,0.8) 100%);
+  border-color: rgba(255,255,255,0.12);
+}
+
+body.dark-mode #elegant-toc.elegant-toc .elegant-toc-trigger:hover,
+body[data-theme="dark"] #elegant-toc.elegant-toc .elegant-toc-trigger:hover,
+.dark #elegant-toc.elegant-toc .elegant-toc-trigger:hover,
+html.dark #elegant-toc.elegant-toc .elegant-toc-trigger:hover,
+#elegant-toc.elegant-toc.elegant-toc[data-et-theme="dark"] .elegant-toc-trigger:hover {
+  background: linear-gradient(135deg, rgba(50,50,50,0.92) 0%, rgba(33,33,33,0.9) 100%);
+  border-color: rgba(255,255,255,0.18);
 }

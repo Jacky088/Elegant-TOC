@@ -117,7 +117,14 @@
     }
 
     /* ---------- 平滑滚动 ---------- */
+    // 偏移量缓存：getComputedStyle / getBoundingClientRect 会触发布局重排，
+    // 滚动期间频繁调用开销大，故缓存结果，仅在 resize 时失效重算。
+    var cachedOffset = null;
+
     function getOffset() {
+        if (cachedOffset !== null) {
+            return cachedOffset;
+        }
         var offset = 100;
         var adminbar = document.getElementById('wpadminbar');
         var header = document.querySelector(
@@ -135,8 +142,13 @@
             }
         }
 
+        cachedOffset = offset;
         document.documentElement.style.setProperty('--et-scroll-offset', (offset / 16) + 'rem');
         return offset;
+    }
+
+    function invalidateOffset() {
+        cachedOffset = null;
     }
 
     function initSmoothScroll(toc) {
@@ -293,6 +305,16 @@
         if (!contentContainer) return;
 
         var contentRect = contentContainer.getBoundingClientRect();
+
+        // 自动收起：移动端面板打开时，若文章底部已滚出视口顶部，则收起回按钮态。
+        // 仅对移动端浮层面板生效（mobile-open 且非 sidebar），避免影响 PC 侧边栏的显隐逻辑。
+        if (contentRect.bottom <= 0
+            && toc.classList.contains('elegant-toc--mobile-open')
+            && !toc.classList.contains('elegant-toc--sidebar')) {
+            closeMobilePanel(toc);
+            return;
+        }
+
         var contentBottom = contentRect.bottom;
         var bottomSafeGap = 20;
         var panelBottomOffset = 88; // fixed mobile panel bottom distance
@@ -302,16 +324,11 @@
         var availableHeight = Math.max(0, effectiveBottom - panelBottomOffset - bottomSafeGap);
         var viewportLimit = Math.max(0, window.innerHeight * 0.7);
         var panelMaxHeight = Math.min(availableHeight, viewportLimit);
+        // 仅写入 CSS 变量，由 .elegant-toc--mobile-open .elegant-toc-panel 的
+        // max-height: min(var(--et-mobile-panel-max-height, 70vh), 70vh) 统一消费。
+        // 不再额外写内联 maxHeight：内联优先级高于 CSS 规则会令变量失效，
+        // 且关闭时内联值不会被清除，会留下脏状态。
         toc.style.setProperty('--et-mobile-panel-max-height', panelMaxHeight + 'px');
-
-        // 当目录面板已经打开时，额外保持面板随页面滚动/内容变化同步可见性
-        if (toc.classList.contains('elegant-toc--mobile-open')) {
-            var panel = toc.querySelector('.elegant-toc-panel');
-            if (panel) {
-                // 重新计算并刷新面板高度
-                panel.style.maxHeight = panelMaxHeight + 'px';
-            }
-        }
     }
 
     function initMobilePanel(toc) {
@@ -376,7 +393,9 @@
         var minLeftSpace = 10;
 
         // 小屏直接走移动端触发按钮模式
-        if (window.innerWidth < minViewport) {
+        // 用 clientWidth 与 CSS @media 视口同口径（不含滚动条），
+        // 避免 innerWidth 含滚动条导致 1009~1023px 区间 JS/CSS 模式错位
+        if (document.documentElement.clientWidth < minViewport) {
             logDebug('viewport too small: ' + window.innerWidth + ' < ' + minViewport);
             resetSidebar(toc);
             return;
@@ -515,8 +534,13 @@
             toc._etMobilePanelScrollHandler = onScrollEnd;
             toc._etMobilePanelScrolling = false;
 
+            // 统一的 resize 调度：重判模式 → 重算位置 → 更新可见性/高度。
+            // 合并原先 boot 内（仅更新可见性/高度）与文件底部（debounce 150 才重判模式）
+            // 两个 handler，消除跨 1024px 断点时 80ms/150ms 两节奏打架造成的瞬时错位。
             var onResize = throttle(function () {
-                updateSidebarVisibility(toc, contentContainer);
+                invalidateOffset();
+                syncBaseFontSize(toc);
+                positionSidebar(toc);
                 updateMobilePanelHeight(toc);
             }, 80);
 
@@ -532,12 +556,4 @@
         boot();
     }
     window.addEventListener('load', boot);
-    window.addEventListener('resize', debounce(function () {
-        var toc = document.getElementById('elegant-toc');
-        if (toc) {
-            syncBaseFontSize(toc);
-            positionSidebar(toc);
-            updateMobilePanelHeight(toc);
-        }
-    }, 150));
 })();
