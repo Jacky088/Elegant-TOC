@@ -23,6 +23,8 @@
     }
 
     function logDebug(message) {
+        // 默认静默；控制台执行 window.elegantTocDebug = true 可开启调试日志
+        if (!window.elegantTocDebug) return;
         if (window.console && window.console.log) {
             console.log('[Elegant TOC]', message);
         }
@@ -69,6 +71,15 @@
     }
 
     /* ---------- 折叠/展开 ---------- */
+    function persistCollapseState(toc) {
+        try {
+            window.localStorage.setItem(
+                'elegant_toc_collapsed',
+                toc.classList.contains('collapsed') ? '1' : '0'
+            );
+        } catch (e) {}
+    }
+
     function initToggle(toc) {
         var panel = toc.querySelector('.elegant-toc-panel');
         if (!panel) return;
@@ -84,6 +95,7 @@
                 toc.classList.add('collapsed');
                 toggle.setAttribute('aria-expanded', 'false');
             }
+            persistCollapseState(toc);
         });
     }
 
@@ -100,20 +112,6 @@
                 toggle.setAttribute('aria-expanded', 'false');
             }
         } catch (e) {}
-
-        // 监听折叠状态变化并持久化
-        new MutationObserver(function (mutations) {
-            mutations.forEach(function (m) {
-                if (m.attributeName === 'class') {
-                    try {
-                        window.localStorage.setItem(
-                            'elegant_toc_collapsed',
-                            toc.classList.contains('collapsed') ? '1' : '0'
-                        );
-                    } catch (e) {}
-                }
-            });
-        }).observe(toc, { attributes: true, attributeFilter: ['class'] });
     }
 
     /* ---------- 平滑滚动 ---------- */
@@ -126,6 +124,14 @@
             return cachedOffset;
         }
         var offset = 100;
+
+        // 开发者可通过 elegant_toc_scroll_offset 过滤器输出的 data-et-offset 强制指定基础偏移（px）
+        var nav = document.getElementById('elegant-toc');
+        var forced = nav ? parseInt(nav.getAttribute('data-et-offset'), 10) : 0;
+        if (forced > 0) {
+            offset = forced;
+        }
+
         var adminbar = document.getElementById('wpadminbar');
         var header = document.querySelector(
             '.site-header, .site-header-inner, header[role="banner"], .sticky-header, #masthead, .main-header, .header-fixed, .site-navigation, .main-navigation'
@@ -170,9 +176,12 @@
             var offset = getOffset();
             var top = target.getBoundingClientRect().top + window.pageYOffset - offset;
 
+            // 尊重系统「减弱动态效果」设置
+            var prefersReduced = window.matchMedia
+                && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
             window.scrollTo({
                 top: top,
-                behavior: 'smooth'
+                behavior: prefersReduced ? 'auto' : 'smooth'
             });
 
             // 高亮闪烁目标
@@ -199,6 +208,7 @@
         if (!targets.length) return;
 
         var offset = getOffset();
+        var currentLink = null;
 
         function updateActive() {
             var active = null;
@@ -217,33 +227,40 @@
             }
 
             active = lastAbove || targets[0];
+            if (!active) return;
 
-            links.forEach(function (link) {
-                link.classList.remove('active');
-                link.classList.remove('et-top-highlight');
-            });
-            if (active) {
-                active.link.classList.add('active');
-                var isTopCue = active === targets[0] && window.pageYOffset <= offset + 20;
-                if (isTopCue) {
-                    active.link.classList.add('et-top-highlight');
+            // 仅在活动项变化时切换类，避免滚动中每帧对所有链接增删 class
+            if (active.link !== currentLink) {
+                if (currentLink) {
+                    currentLink.classList.remove('active');
+                    currentLink.classList.remove('et-top-highlight');
                 }
-                var list = panel.querySelector('.elegant-toc-list');
-                if (list) {
-                    var linkTop = active.link.offsetTop;
-                    var listHeight = list.clientHeight;
-                    var linkHeight = active.link.clientHeight;
-                    var scrollTop = list.scrollTop;
-                    var nearPageTop = window.pageYOffset <= offset + 20;
+                currentLink = active.link;
+                currentLink.classList.add('active');
+            }
 
-                    if (active === targets[0] || nearPageTop) {
-                        // 回到页面顶部时，目录面板自动回到首项
-                        list.scrollTop = 0;
-                    } else if (linkTop < scrollTop) {
-                        list.scrollTop = linkTop - 10;
-                    } else if (linkTop + linkHeight > scrollTop + listHeight) {
-                        list.scrollTop = linkTop + linkHeight - listHeight + 10;
-                    }
+            var isTopCue = active === targets[0] && window.pageYOffset <= offset + 20;
+            if (isTopCue) {
+                active.link.classList.add('et-top-highlight');
+            } else {
+                active.link.classList.remove('et-top-highlight');
+            }
+
+            var list = panel.querySelector('.elegant-toc-list');
+            if (list) {
+                var linkTop = active.link.offsetTop;
+                var listHeight = list.clientHeight;
+                var linkHeight = active.link.clientHeight;
+                var scrollTop = list.scrollTop;
+                var nearPageTop = window.pageYOffset <= offset + 20;
+
+                if (active === targets[0] || nearPageTop) {
+                    // 回到页面顶部时，目录面板自动回到首项
+                    list.scrollTop = 0;
+                } else if (linkTop < scrollTop) {
+                    list.scrollTop = linkTop - 10;
+                } else if (linkTop + linkHeight > scrollTop + listHeight) {
+                    list.scrollTop = linkTop + linkHeight - listHeight + 10;
                 }
             }
         }
@@ -365,6 +382,17 @@
             }
         });
 
+        // Esc 关闭移动端面板并把焦点还给触发按钮，保证键盘用户可以退出浮层
+        document.addEventListener('keydown', function (e) {
+            if (e.key !== 'Escape' && e.key !== 'Esc') return;
+            if (!toc.classList.contains('elegant-toc--mobile-open')) return;
+            closeMobilePanel(toc);
+            var trigger = toc.querySelector('.elegant-toc-trigger');
+            if (trigger && toc.contains(document.activeElement)) {
+                trigger.focus();
+            }
+        });
+
         // 监听 panel transitionend，清理动画类并隐藏
         if (panel) {
             panel.addEventListener('transitionend', function (e) {
@@ -467,28 +495,25 @@
         var refEl = toc.nextElementSibling || contentContainer;
         if (!refEl) return;
 
-        // 批量读取，避免 读-写-读 交错导致的布局抖动（layout thrashing）
+        // 先完成全部读取，再统一写入：写入后读面板高度会强制同步重排，
+        // 滚动帧内每次触发都会卡顿（读到的面板高度滞后一帧，48px 阈值足以吸收误差）
         var headerOffset = getOffset();
         var refRect = refEl.getBoundingClientRect();
         var contentRect = contentContainer.getBoundingClientRect();
         var inView = contentRect.bottom > 0 && contentRect.top < window.innerHeight;
 
+        var panel = toc.querySelector('.elegant-toc-panel');
+        var panelHeight = (panel && inView) ? panel.getBoundingClientRect().height : 0;
+
         var tocTop = Math.max(refRect.top, headerOffset + 20);
         var contentBottom = contentRect.bottom;
         var sidebarMaxHeight = Math.max(0, (contentBottom - 20) - tocTop);
 
-        // 统一写入（一次写，不再穿插读取 panel 高度）
+        var tooCloseToBottom = inView && (tocTop + panelHeight) > contentBottom - 48; // 距文章底部 48px 开始淡出
+
+        // 统一写入
         toc.style.setProperty('--et-sidebar-top', tocTop + 'px');
         toc.style.setProperty('--et-sidebar-max-height', sidebarMaxHeight + 'px');
-
-        // 仅在可见区域内时读取面板高度，判断是否过早贴近文章底部
-        var tooCloseToBottom = false;
-        if (inView) {
-            var panel = toc.querySelector('.elegant-toc-panel');
-            var panelHeight = panel ? panel.getBoundingClientRect().height : 0;
-            var prematureHideThreshold = 48; // 距离文章底部多少像素开始淡出
-            tooCloseToBottom = (tocTop + panelHeight) > contentBottom - prematureHideThreshold;
-        }
 
         if (!inView || tooCloseToBottom) {
             toc.classList.add('elegant-toc--hidden');

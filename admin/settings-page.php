@@ -1,12 +1,14 @@
+<?php
+if (!defined('ABSPATH')) {
+    exit;
+}
+?>
 <div class="wrap elegant-toc-admin">
     <h1><?php echo esc_html(get_admin_page_title()); ?></h1>
 
     <div class="elegant-toc-admin-container">
         <form method="post" action="options.php">
-            <?php
-            settings_fields('elegant_toc_options');
-            do_settings_sections('elegant-toc');
-            ?>
+            <?php settings_fields('elegant_toc_options'); ?>
 
             <div class="elegant-toc-section">
                 <h2><?php esc_html_e('基本设置', 'elegant-toc'); ?></h2>
@@ -137,7 +139,6 @@
                 <div class="elegant-toc-preview-frame">
                     <nav class="elegant-toc" id="elegant-toc" style="position: relative; top: 0; left: 0; bottom: auto; max-width: 100%;"<?php echo ('auto' !== $current_theme) ? ' data-et-theme="' . esc_attr($current_theme) . '"' : ''; ?>>
                     <div class="elegant-toc-panel" style="display: block; opacity: 1; visibility: visible; pointer-events: auto; transform: none; position: relative;">
-                        <div class="elegant-toc-topbar"></div>
                         <div class="elegant-toc-header">
                             <div class="elegant-toc-header-left">
                                 <span class="elegant-toc-icon">

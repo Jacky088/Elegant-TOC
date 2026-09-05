@@ -23,7 +23,9 @@ function elegant_toc_uninstall_site() {
     delete_option('elegant_toc_options');
 
     // 2. 删除所有文章上的「禁用目录」自定义字段
-    //    注意：meta_key 为 'disable_toc'（无下划线前缀），与 save_post_meta_box() 保持一致
+    //    新版 meta_key 为 '_elegant_toc_disabled'；'disable_toc' 为旧版及手动自定义字段使用的 key，
+    //    与 is_post_disabled() / save_post_meta_box() 的读写逻辑保持一致
+    delete_post_meta_by_key('_elegant_toc_disabled');
     delete_post_meta_by_key('disable_toc');
 
     // 3. 清理可能残留的 autoload 缓存

@@ -5,14 +5,14 @@
   "license": "GPL-2.0-or-later",
   "require": {
     "php": ">=7.4",
-    "composer/installers": "~1.0"
+    "composer/installers": "^1.0 || ^2.0"
   },
   "require-dev": {
     "phpunit/phpunit": "^9.5",
     "wp-coding-standards/wpcs": "^2.3"
   },
   "scripts": {
-    "phpcs": "phpcs --standard=WordPress elegant-toc.php",
-    "phpcbf": "phpcbf --standard=WordPress elegant-toc.php"
+    "phpcs": "phpcs --standard=WordPress elegant-toc.php admin/settings-page.php uninstall.php",
+    "phpcbf": "phpcbf --standard=WordPress elegant-toc.php admin/settings-page.php uninstall.php"
   }
 }

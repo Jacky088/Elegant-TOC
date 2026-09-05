@@ -1,10 +1,12 @@
 /* ============================================================
-   Elegant TOC v1.7.0 — Adaptive Layout
+   Elegant TOC v1.9.1 — Adaptive Layout
    桌面端：左侧悬浮侧边栏
    移动端/空间不足：左下角触发按钮 + 底部浮层面板
    ============================================================ */
 
-html { scroll-behavior: smooth; }
+/* 注意：不在全局设置 html { scroll-behavior: smooth } ——
+   那会替整站所有锚点强加平滑滚动，且无法尊重系统减弱动效设置。
+   目录自身的平滑滚动由 JS 实现，并对 prefers-reduced-motion 降级。 */
 
 .elegant-toc-heading {
   scroll-margin-top: var(--et-scroll-offset, 5.5rem);
@@ -170,13 +172,12 @@ html { scroll-behavior: smooth; }
   padding: 1.25rem 1.35rem;
   width: 260px;
   max-width: calc(100vw - 40px);
-  max-height: var(--et-panel-max-height, 70vh);
+  max-height: 70vh;
   /* 外层面板只负责整体定位与裁切，不允许出现自身滚动条；
      滚动只交给内部 .elegant-toc-list */
   overflow: hidden;
   scrollbar-width: none;
   -ms-overflow-style: none;
-  font-size: 0.9375rem;
   line-height: 1.6;
   color: var(--et-text);
   box-shadow: 0 18px 54px rgba(10, 15, 25, 0.12),
@@ -266,12 +267,6 @@ html { scroll-behavior: smooth; }
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
-}
-
-/* ---------- 顶部装饰线（极细） ---------- */
-#elegant-toc .elegant-toc-topbar {
-  /* 已移除顶部细线装饰，视觉上更干净 */
-  display: none !important;
 }
 
 /* ---------- Header ---------- */
@@ -412,6 +407,9 @@ html { scroll-behavior: smooth; }
   list-style: none;
   margin: 0;
   padding: 0;
+  /* 作为列表项的 offsetParent：JS 高亮滚动依赖 offsetTop 为列表内坐标，
+     若缺少 position，offsetTop 会相对 fixed 面板计算（多出 header 高度）导致滚动定位错位 */
+  position: relative;
   max-height: calc(var(--et-base-font-size) * var(--et-panel-line-height) * var(--et-panel-max-lines));
   overflow-y: auto;
   overflow-x: hidden;
@@ -718,4 +716,15 @@ html.dark #elegant-toc.elegant-toc .elegant-toc-trigger:hover,
 #elegant-toc.elegant-toc.elegant-toc[data-et-theme="dark"] .elegant-toc-trigger:hover {
   background: linear-gradient(135deg, rgba(50,50,50,0.92) 0%, rgba(33,33,33,0.9) 100%);
   border-color: rgba(255,255,255,0.18);
+}
+
+/* ---------- 小屏减负：降低毛玻璃模糊半径 ----------
+   backdrop-filter 在低端移动设备上逐帧重绘开销大，
+   小屏适当降低模糊半径，外观几乎不变但明显省电省帧。 */
+@media (max-width: 599px) {
+  #elegant-toc .elegant-toc-panel,
+  #elegant-toc .elegant-toc-trigger {
+    backdrop-filter: blur(5px) saturate(110%);
+    -webkit-backdrop-filter: blur(5px) saturate(110%);
+  }
 }
