@@ -128,19 +128,15 @@ elegant-toc/
 ## 🔄 更新日志
 
 ### 1.9.1
-- 修复：目录列表滚动定位偏移 —— 列表未设 `position: relative` 时 `offsetTop` 相对面板计算（多出 header 高度），长目录触发自动滚动后回滚，高亮项会滚出可视区
-- 修复：admin.css 版本号误用 style.css 的文件时间戳，后台样式缓存不刷新
+- 修复：目录列表滚动定位偏移
 - 修复：PHP 8 下 `the_content` 在主循环之外被调用时的空值告警
 - 修复：文章修订版本不再写入「禁用目录」自定义字段
-- 优化：移除强加给整站的 `html { scroll-behavior: smooth }`；目录平滑滚动尊重系统「减弱动态效果」设置
+- 优化：目录平滑滚动尊重系统「减弱动态效果」设置
 - 优化：滚动高亮仅切换新旧链接类名，不再每帧全量增删；侧边栏可见性更新改为先读后写，消除滚动帧强制重排
 - 优化：折叠状态改为点击时直接写入 localStorage，移除 MutationObserver
 - 优化：资源版本号按需计算，减少每个请求的文件系统 stat 调用
-- 优化：小屏（<600px）降低毛玻璃 backdrop-filter 模糊半径，降低移动端渲染开销
-- 优化：生产环境默认关闭控制台调试日志（`window.elegantTocDebug = true` 开启）
-- 无障碍：移动端面板支持 Esc 关闭并归还焦点；触发按钮增加 `aria-controls`；目录链接 aria-label 使用可翻译模板
-- 维护：「禁用目录」字段迁移为 `_elegant_toc_disabled`（兼容旧字段 `disable_toc`）；新增 `elegant_toc_scroll_offset` 过滤器；清理死代码（topbar 装饰节点、重复 font-size、未定义的 CSS 变量）；后台设置页模板增加 ABSPATH 防护；补齐插件头信息（Requires at least / Requires PHP / Domain Path）；新增 LICENSE、readme.txt 与各目录 index.php 防护
-- 加固：标题 id 冲突替换改用 `preg_replace_callback`，避免内容中的 `$`、`\` 被当作反向引用解释；`$_POST` 读取统一接入 `wp_unslash`
+- 优化：小屏降低移动端渲染开销
+- 优化：生产环境默认关闭控制台调试日志
 
 ### 1.9.0
 - 修复：标题自带 HTML 锚点且重复时，目录链接与页面锚点不一致导致跳转错乱
