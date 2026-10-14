@@ -550,9 +550,9 @@
 #elegant-toc .elegant-toc-level-3 { padding-left: 2.25rem; }
 #elegant-toc .elegant-toc-level-3 .elegant-toc-text { font-size: 0.85em; }
 
-/* ---------- 深色模式 ---------- */
+/* ---------- 深色模式（仅在系统默认跟随/未指定自定义主题时生效） ---------- */
 @media (prefers-color-scheme: dark) {
-  #elegant-toc.elegant-toc {
+  #elegant-toc.elegant-toc:not([data-et-theme]) {
     --et-accent: #f0f0f0;
     --et-accent-light: #c0c0c0;
     --et-border: #404040;
@@ -565,10 +565,10 @@
   }
 }
 
-body.dark-mode #elegant-toc.elegant-toc,
-body[data-theme="dark"] #elegant-toc.elegant-toc,
-.dark #elegant-toc.elegant-toc,
-html.dark #elegant-toc.elegant-toc {
+body.dark-mode #elegant-toc.elegant-toc:not([data-et-theme]),
+body[data-theme="dark"] #elegant-toc.elegant-toc:not([data-et-theme]),
+.dark #elegant-toc.elegant-toc:not([data-et-theme]),
+html.dark #elegant-toc.elegant-toc:not([data-et-theme]) {
   --et-accent: #f0f0f0;
   --et-accent-light: #c0c0c0;
   --et-border: #404040;
@@ -679,40 +679,43 @@ html.dark #elegant-toc.elegant-toc {
    仅在深色上下文覆盖背景，浅色/彩色主题保持不变。
    ----------------------------------------------------------- */
 @media (prefers-color-scheme: dark) {
-  #elegant-toc.elegant-toc .elegant-toc-panel {
+  #elegant-toc.elegant-toc:not([data-et-theme]) .elegant-toc-panel,
+  #elegant-toc.elegant-toc[data-et-theme="dark"] .elegant-toc-panel {
     background: linear-gradient(180deg, rgba(26,26,26,0.82) 0%, rgba(18,18,18,0.8) 100%);
   }
-  #elegant-toc.elegant-toc .elegant-toc-trigger {
+  #elegant-toc.elegant-toc:not([data-et-theme]) .elegant-toc-trigger,
+  #elegant-toc.elegant-toc[data-et-theme="dark"] .elegant-toc-trigger {
     background: linear-gradient(135deg, rgba(40,40,40,0.82) 0%, rgba(26,26,26,0.8) 100%);
     border-color: rgba(255,255,255,0.12);
   }
-  #elegant-toc.elegant-toc .elegant-toc-trigger:hover {
+  #elegant-toc.elegant-toc:not([data-et-theme]) .elegant-toc-trigger:hover,
+  #elegant-toc.elegant-toc[data-et-theme="dark"] .elegant-toc-trigger:hover {
     background: linear-gradient(135deg, rgba(50,50,50,0.92) 0%, rgba(33,33,33,0.9) 100%);
     border-color: rgba(255,255,255,0.18);
   }
 }
 
-body.dark-mode #elegant-toc.elegant-toc .elegant-toc-panel,
-body[data-theme="dark"] #elegant-toc.elegant-toc .elegant-toc-panel,
-.dark #elegant-toc.elegant-toc .elegant-toc-panel,
-html.dark #elegant-toc.elegant-toc .elegant-toc-panel,
+body.dark-mode #elegant-toc.elegant-toc:not([data-et-theme]) .elegant-toc-panel,
+body[data-theme="dark"] #elegant-toc.elegant-toc:not([data-et-theme]) .elegant-toc-panel,
+.dark #elegant-toc.elegant-toc:not([data-et-theme]) .elegant-toc-panel,
+html.dark #elegant-toc.elegant-toc:not([data-et-theme]) .elegant-toc-panel,
 #elegant-toc.elegant-toc.elegant-toc[data-et-theme="dark"] .elegant-toc-panel {
   background: linear-gradient(180deg, rgba(26,26,26,0.82) 0%, rgba(18,18,18,0.8) 100%);
 }
 
-body.dark-mode #elegant-toc.elegant-toc .elegant-toc-trigger,
-body[data-theme="dark"] #elegant-toc.elegant-toc .elegant-toc-trigger,
-.dark #elegant-toc.elegant-toc .elegant-toc-trigger,
-html.dark #elegant-toc.elegant-toc .elegant-toc-trigger,
+body.dark-mode #elegant-toc.elegant-toc:not([data-et-theme]) .elegant-toc-trigger,
+body[data-theme="dark"] #elegant-toc.elegant-toc:not([data-et-theme]) .elegant-toc-trigger,
+.dark #elegant-toc.elegant-toc:not([data-et-theme]) .elegant-toc-trigger,
+html.dark #elegant-toc.elegant-toc:not([data-et-theme]) .elegant-toc-trigger,
 #elegant-toc.elegant-toc.elegant-toc[data-et-theme="dark"] .elegant-toc-trigger {
   background: linear-gradient(135deg, rgba(40,40,40,0.82) 0%, rgba(26,26,26,0.8) 100%);
   border-color: rgba(255,255,255,0.12);
 }
 
-body.dark-mode #elegant-toc.elegant-toc .elegant-toc-trigger:hover,
-body[data-theme="dark"] #elegant-toc.elegant-toc .elegant-toc-trigger:hover,
-.dark #elegant-toc.elegant-toc .elegant-toc-trigger:hover,
-html.dark #elegant-toc.elegant-toc .elegant-toc-trigger:hover,
+body.dark-mode #elegant-toc.elegant-toc:not([data-et-theme]) .elegant-toc-trigger:hover,
+body[data-theme="dark"] #elegant-toc.elegant-toc:not([data-et-theme]) .elegant-toc-trigger:hover,
+.dark #elegant-toc.elegant-toc:not([data-et-theme]) .elegant-toc-trigger:hover,
+html.dark #elegant-toc.elegant-toc:not([data-et-theme]) .elegant-toc-trigger:hover,
 #elegant-toc.elegant-toc.elegant-toc[data-et-theme="dark"] .elegant-toc-trigger:hover {
   background: linear-gradient(135deg, rgba(50,50,50,0.92) 0%, rgba(33,33,33,0.9) 100%);
   border-color: rgba(255,255,255,0.18);

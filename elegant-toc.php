@@ -24,8 +24,11 @@ class Elegant_TOC {
     /** 惰性计算的资源版本号缓存（key 为 assets/ 下的文件名） */
     private $asset_vers = array();
 
-    /** insert_toc 是否已执行 */
+    /** insert_toc 是否已执行（保留向下兼容） */
     private $toc_inserted = false;
+
+    /** 已插入目录的文章 ID 记录（防止多循环或提前渲染串扰） */
+    private $inserted_posts = array();
 
     /** 短代码传入的自定义标题（若有），供 generate_toc 使用 */
     private $shortcode_title = null;
@@ -117,7 +120,7 @@ class Elegant_TOC {
     }
 
     private function should_load_on_page() {
-        if (!is_singular() || is_front_page() || is_feed()) {
+        if (!is_singular() || is_feed()) {
             return false;
         }
 
@@ -126,9 +129,14 @@ class Elegant_TOC {
             return false;
         }
 
-        // 显式包含短代码的文章
+        // 显式包含短代码的文章（即使在首页也加载样式）
         if (has_shortcode($post->post_content, 'elegant_toc')) {
             return true;
+        }
+
+        // 默认不在博客首页自动加载
+        if (is_front_page()) {
+            return false;
         }
 
         $options = $this->get_options();
@@ -174,31 +182,48 @@ class Elegant_TOC {
     /* ------------------------------------------------------------------ */
 
     public function insert_toc($content) {
-        if (is_admin() || is_feed() || is_front_page() || !is_singular()) {
+        if (is_admin() || is_feed() || (!is_singular() && !is_front_page())) {
             return $content;
         }
 
-        if ($this->toc_inserted) {
+        // 防止在 wp_head 阶段（如 Yoast SEO、Rank Math 提前调用 the_content 生成 meta 摘要）被截胡
+        if (doing_action('wp_head')) {
             return $content;
         }
-
-        $post_id = get_the_ID();
-        if ($this->is_post_disabled($post_id)) {
-            return $content;
-        }
-
-        $options = $this->get_options();
-        $auto_insert = !empty($options['enabled']);
 
         $post = get_post();
         if (!$post) {
             // the_content 可能被主题/构建器在主循环之外调用，此时无文章上下文
             return $content;
         }
+
+        $post_id = $post->ID;
+        if ($this->is_post_disabled($post_id)) {
+            return $content;
+        }
+
+        // 防止同篇文章重复插入
+        if (isset($this->inserted_posts[$post_id])) {
+            return $content;
+        }
+
         $has_shortcode = has_shortcode($post->post_content, 'elegant_toc');
+
+        // 在首页若未显式使用短代码，则不自动插入
+        if (is_front_page() && !$has_shortcode) {
+            return $content;
+        }
+
+        $options     = $this->get_options();
+        $auto_insert = !empty($options['enabled']);
 
         // 如果既没有启用自动插入也没有使用短代码，则直接返回
         if (!$auto_insert && !$has_shortcode) {
+            return $content;
+        }
+
+        // 非主循环且非主查询时，若无短代码则不自动插入（避免污染侧栏、相关推荐等次级循环）
+        if (!$has_shortcode && (!in_the_loop() || !is_main_query())) {
             return $content;
         }
 
@@ -212,12 +237,19 @@ class Elegant_TOC {
 
         $result   = $this->extract_and_annotate_headings($content, $options['heading_levels']);
         $headings = $result['headings'];
-        $content  = $result['content'];
 
         if (count($headings) < $options['min_headings']) {
+            // 标题数量不足：若存在短代码占位符则清理掉，保留未被修改污染的原始正文
+            if ($has_shortcode) {
+                return str_replace('<div class="elegant-toc-placeholder" aria-hidden="true"></div>', '', $content);
+            }
             return $content;
         }
 
+        // 仅在标题数达标后，才应用注入了 id 和 class 的新正文
+        $content = $result['content'];
+
+        $this->inserted_posts[$post_id] = true;
         $this->toc_inserted = true;
 
         // 确保资源已加载（部分主题 the_content 时 scripts 已跑完）
@@ -291,13 +323,14 @@ class Elegant_TOC {
         $this->cached_options = array(
             'enabled'        => array_key_exists('enabled', $options) ? (bool) $options['enabled'] : true,
             'min_headings'   => isset($options['min_headings']) ? max(1, intval($options['min_headings'])) : 3,
+            'scroll_offset'  => isset($options['scroll_offset']) ? max(0, min(500, intval($options['scroll_offset']))) : 0,
             'heading_levels' => (!empty($options['heading_levels']) && is_array($options['heading_levels']))
                 ? $options['heading_levels']
                 : array('h2', 'h3', 'h4'),
             'color_theme'    => (!empty($options['color_theme']) && is_string($options['color_theme']))
                 ? $options['color_theme']
                 : 'light',
-            'post_types'     => (!empty($options['post_types']) && is_array($options['post_types']))
+            'post_types'     => (isset($options['post_types']) && is_array($options['post_types']))
                 ? $options['post_types']
                 : array('post', 'page'),
         );
@@ -318,14 +351,21 @@ class Elegant_TOC {
      * 性能优化：使用 array_flip 将 $levels 转为哈希表，实现 O(1) 查找
      */
     private function extract_and_annotate_headings($content, $levels) {
-        $headings = array();
-        $used_ids = array();
-        $pattern  = '/<(h[2-6])(\s[^>]*)?>(.*?)<\/\1>/is';
+        $headings    = array();
+        $used_ids    = array();
+        $code_blocks = array();
 
-        // 将 $levels 转为哈希表，优化查找性能
+        // 屏蔽 <pre>、<code>、<script>、<style> 代码块，防止误解析技术教程代码中的 h2-h6
+        $masked_content = preg_replace_callback('/<(pre|code|script|style)(\s[^>]*)?>.*?<\/\1>/is', function ($match) use (&$code_blocks) {
+            $placeholder = '<!--ELEGANT_TOC_MASK_' . count($code_blocks) . '-->';
+            $code_blocks[$placeholder] = $match[0];
+            return $placeholder;
+        }, $content);
+
+        $pattern    = '/<(h[2-6])(\s[^>]*)?>(.*?)<\/\1>/is';
         $levels_map = array_flip($levels);
 
-        $content = preg_replace_callback($pattern, function ($m) use ($levels_map, &$headings, &$used_ids) {
+        $annotated_content = preg_replace_callback($pattern, function ($m) use ($levels_map, &$headings, &$used_ids) {
             $tag   = strtolower($m[1]);
             $attrs = isset($m[2]) ? $m[2] : '';
             $inner = $m[3];
@@ -364,18 +404,31 @@ class Elegant_TOC {
                 $attrs = rtrim($attrs) . ' id="' . esc_attr($id) . '"';
             }
 
-            // 添加 CSS 类用于 scroll-margin 控制（不再内联 style）
+            // 添加 CSS 类用于 scroll-margin 控制（合并已有 class，避免 HTML5 重复 class 属性语法错误）
             if (strpos($attrs, 'elegant-toc-heading') === false) {
-                $attrs .= ' class="elegant-toc-heading"';
+                if (preg_match('/\bclass=(["\'])([^"\']*)\1/i', $attrs)) {
+                    $attrs = preg_replace_callback('/\bclass=(["\'])([^"\']*)\1/i', function ($m_cls) {
+                        $quote            = $m_cls[1];
+                        $existing_classes = trim($m_cls[2]);
+                        return ' class=' . $quote . ($existing_classes !== '' ? $existing_classes . ' ' : '') . 'elegant-toc-heading' . $quote;
+                    }, $attrs, 1);
+                } else {
+                    $attrs = rtrim($attrs) . ' class="elegant-toc-heading"';
+                }
             }
 
             $used_ids[$id] = true;
-            $headings[] = array('level' => $level, 'text' => $text, 'id' => $id);
+            $headings[]    = array('level' => $level, 'text' => $text, 'id' => $id);
 
             return '<' . $tag . $attrs . '>' . $inner . '</' . $tag . '>';
-        }, $content);
+        }, $masked_content);
 
-        return array('headings' => $headings, 'content' => $content);
+        // 还原之前屏蔽的代码块
+        if (!empty($code_blocks)) {
+            $annotated_content = strtr($annotated_content, $code_blocks);
+        }
+
+        return array('headings' => $headings, 'content' => $annotated_content);
     }
 
     private function unique_id($text, &$used) {
@@ -403,8 +456,9 @@ class Elegant_TOC {
         $toc  = '<!-- Elegant TOC v' . esc_html(self::VERSION) . ' -->';
         $toc .= '<nav class="elegant-toc" id="elegant-toc"';
         $toc .= ' data-et-ver="' . esc_attr(self::VERSION) . '"';
-        // 开发者可通过 elegant_toc_scroll_offset 过滤器强制指定滚动偏移（px），JS 读取 data-et-offset
-        $forced_offset = intval(apply_filters('elegant_toc_scroll_offset', 0));
+        // 后台设置或开发者过滤器强制指定滚动偏移（px），JS 读取 data-et-offset
+        $configured_offset = !empty($options['scroll_offset']) ? intval($options['scroll_offset']) : 0;
+        $forced_offset     = intval(apply_filters('elegant_toc_scroll_offset', $configured_offset));
         if ($forced_offset > 0) {
             $toc .= ' data-et-offset="' . esc_attr($forced_offset) . '"';
         }
@@ -582,7 +636,8 @@ class Elegant_TOC {
     public function sanitize_options($input) {
         $clean = array();
         $clean['enabled'] = !empty($input['enabled']);
-        $clean['min_headings'] = max(1, min(10, intval(isset($input['min_headings']) ? $input['min_headings'] : 3)));
+        $clean['min_headings']  = max(1, min(10, intval(isset($input['min_headings']) ? $input['min_headings'] : 3)));
+        $clean['scroll_offset'] = isset($input['scroll_offset']) ? max(0, min(500, intval($input['scroll_offset']))) : 0;
 
         $allowed_levels = array('h2', 'h3', 'h4', 'h5', 'h6');
         $clean['heading_levels'] = array();
@@ -619,8 +674,8 @@ class Elegant_TOC {
                 }
             }
         }
-        // 如果没有选择任何类型，默认使用 post 和 page
-        if (empty($clean['post_types'])) {
+        // 若未选择任何类型且非设置表单提交（例如首次插件初始化），默认使用 post 和 page
+        if (empty($clean['post_types']) && !isset($input['min_headings'])) {
             $clean['post_types'] = array('post', 'page');
         }
 

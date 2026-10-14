@@ -4,13 +4,48 @@
     /* ---------- 辅助函数 ---------- */
     function throttle(fn, limit) {
         var last = 0;
+        var timer = null;
+        var trailingArgs = null;
+        var trailingCtx = null;
         return function () {
             var now = Date.now();
-            if (now - last >= limit) {
+            var remaining = limit - (now - last);
+            var ctx = this, args = arguments;
+            if (remaining <= 0 || remaining > limit) {
+                if (timer) {
+                    clearTimeout(timer);
+                    timer = null;
+                }
                 last = now;
-                fn.apply(this, arguments);
+                fn.apply(ctx, args);
+            } else {
+                trailingArgs = args;
+                trailingCtx = ctx;
+                if (!timer) {
+                    timer = setTimeout(function () {
+                        last = Date.now();
+                        timer = null;
+                        fn.apply(trailingCtx, trailingArgs);
+                        trailingArgs = trailingCtx = null;
+                    }, remaining);
+                }
             }
         };
+    }
+
+    function getTargetId(link) {
+        if (!link) return '';
+        var target = link.getAttribute('data-toc-target');
+        if (target) return target;
+        var href = link.getAttribute('href');
+        if (href && href.charAt(0) === '#') {
+            try {
+                return decodeURIComponent(href.slice(1));
+            } catch (e) {
+                return href.slice(1);
+            }
+        }
+        return '';
     }
 
     function debounce(fn, wait) {
@@ -125,26 +160,29 @@
         }
         var offset = 100;
 
-        // 开发者可通过 elegant_toc_scroll_offset 过滤器输出的 data-et-offset 强制指定基础偏移（px）
+        // 后台设置或开发者过滤器强制指定的基础偏移（px）
         var nav = document.getElementById('elegant-toc');
         var forced = nav ? parseInt(nav.getAttribute('data-et-offset'), 10) : 0;
-        if (forced > 0) {
-            offset = forced;
-        }
-
         var adminbar = document.getElementById('wpadminbar');
-        var header = document.querySelector(
-            '.site-header, .site-header-inner, header[role="banner"], .sticky-header, #masthead, .main-header, .header-fixed, .site-navigation, .main-navigation'
-        );
+        var adminbarHeight = (adminbar && window.getComputedStyle(adminbar).position === 'fixed') ? adminbar.offsetHeight : 0;
 
-        if (adminbar) {
-            offset = Math.max(offset, adminbar.offsetHeight + 20);
-        }
-        if (header) {
-            var style = window.getComputedStyle(header);
-            var isStickyOrFixed = (style.position === 'fixed' || style.position === 'sticky');
-            if (isStickyOrFixed) {
-                offset = Math.max(offset, header.getBoundingClientRect().height + 20);
+        if (forced > 0) {
+            // 用户显式设置了偏移量：以此为基准，若管理员条为吸顶则叠加管理栏高度，保证后台登录预览和前台一致
+            offset = forced + adminbarHeight;
+        } else {
+            // 自动探测：探测管理员条与吸顶 Header
+            if (adminbar) {
+                offset = Math.max(offset, adminbar.offsetHeight + 20);
+            }
+            var header = document.querySelector(
+                '.site-header, .site-header-inner, header[role="banner"], .sticky-header, #masthead, .main-header, .header-fixed, .site-navigation, .main-navigation'
+            );
+            if (header) {
+                var style = window.getComputedStyle(header);
+                var isStickyOrFixed = (style.position === 'fixed' || style.position === 'sticky');
+                if (isStickyOrFixed) {
+                    offset = Math.max(offset, header.getBoundingClientRect().height + 20);
+                }
             }
         }
 
@@ -165,14 +203,19 @@
             var link = e.target.closest('.elegant-toc-link');
             if (!link) return;
 
-            var href = link.getAttribute('href');
-            if (!href || href.charAt(0) !== '#') return;
+            var id = getTargetId(link);
+            if (!id) return;
 
-            var id = href.slice(1);
             var target = document.getElementById(id);
             if (!target) return;
 
             e.preventDefault();
+
+            // 移动端在点击目录项后自动收起浮层面板，优化阅读体验
+            if (toc.classList.contains('elegant-toc--mobile-open')) {
+                closeMobilePanel(toc);
+            }
+
             var offset = getOffset();
             var top = target.getBoundingClientRect().top + window.pageYOffset - offset;
 
@@ -183,6 +226,15 @@
                 top: top,
                 behavior: prefersReduced ? 'auto' : 'smooth'
             });
+
+            // 更新地址栏 Hash 并管理无障碍焦点
+            if (window.history && window.history.pushState) {
+                window.history.pushState(null, '', '#' + id);
+            }
+            if (!target.hasAttribute('tabindex')) {
+                target.setAttribute('tabindex', '-1');
+            }
+            target.focus({ preventScroll: true });
 
             // 高亮闪烁目标
             target.classList.add('elegant-toc-target-flash');
@@ -201,9 +253,11 @@
 
         var targets = [];
         links.forEach(function (link) {
-            var id = link.getAttribute('href').slice(1);
-            var el = document.getElementById(id);
-            if (el) targets.push({ link: link, el: el });
+            var id = getTargetId(link);
+            if (id) {
+                var el = document.getElementById(id);
+                if (el) targets.push({ link: link, el: el });
+            }
         });
         if (!targets.length) return;
 
@@ -226,7 +280,14 @@
                 }
             }
 
-            active = lastAbove || targets[0];
+            // 页面触底补偿（解决文章结尾短章节因高度不足无法激活的缺陷）
+            var isNearBottom = (window.innerHeight + window.pageYOffset) >= (document.documentElement.scrollHeight - 50);
+            if (isNearBottom && targets.length > 0) {
+                active = targets[targets.length - 1];
+            } else {
+                active = lastAbove || targets[0];
+            }
+
             if (!active) return;
 
             // 仅在活动项变化时切换类，避免滚动中每帧对所有链接增删 class
@@ -570,7 +631,6 @@
             }, 80);
 
             window.addEventListener('scroll', onScroll, { passive: true });
-            window.addEventListener('scroll', onScrollEnd, { passive: true });
             window.addEventListener('resize', onResize, { passive: true });
         }
     }

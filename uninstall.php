@@ -33,9 +33,12 @@ function elegant_toc_uninstall_site() {
 }
 
 if (is_multisite()) {
-    global $wpdb;
-
-    $blog_ids = $wpdb->get_col("SELECT blog_id FROM {$wpdb->blogs}");
+    if (function_exists('get_sites')) {
+        $blog_ids = get_sites(array('fields' => 'ids'));
+    } else {
+        global $wpdb;
+        $blog_ids = $wpdb->get_col("SELECT blog_id FROM {$wpdb->blogs}");
+    }
 
     if (!empty($blog_ids)) {
         foreach ($blog_ids as $blog_id) {

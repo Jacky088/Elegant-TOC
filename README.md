@@ -83,10 +83,11 @@ add_filter('elegant_toc_post_types', function ($post_types) {
 
 ### 自定义滚动偏移
 
-插件会自动探测管理工具栏和吸顶头部来计算锚点滚动偏移；如果你的主题结构特殊，可通过 `elegant_toc_scroll_offset` 过滤器强制指定偏移量（px）：
+- **后台可视化设置**：在 WordPress 后台「设置 -> Elegant TOC」中，可直接在「顶部偏移量 (Offset)」中填写数值（如 `100` 或 `120` px）。留空或填 `0` 则由插件自动探测管理栏与吸顶导航栏高度。
+- **开发者代码指定**：也可以通过 `elegant_toc_scroll_offset` 过滤器在代码中强制指定偏移量（px）：
 
 ```php
-add_filter('elegant_toc_scroll_offset', function () {
+add_filter('elegant_toc_scroll_offset', function ($offset) {
     return 120; // 单位：px
 });
 ```

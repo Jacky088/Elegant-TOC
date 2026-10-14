@@ -1,74 +1,488 @@
-/* Elegant TOC Admin Styles */
+/* ============================================================
+   Elegant TOC - Modern Admin UI Styles
+   ============================================================ */
 
-.elegant-toc-admin-container {
-    max-width: 1000px;
+.wrap.elegant-toc-admin {
+    max-width: 1100px;
+    margin: 20px auto 40px 10px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", "PingFang SC", "Microsoft YaHei", Arial, sans-serif;
+    color: #1f2937;
 }
 
-.elegant-toc-section {
-    background: #fff;
-    border: 1px solid #ccd0d4;
-    border-radius: 4px;
-    padding: 20px;
-    margin-bottom: 20px;
+/* 隐藏 WordPress 默认标题 */
+.wrap.elegant-toc-admin > h1.wp-heading-inline,
+.wrap.elegant-toc-admin > h1:first-child {
+    display: none;
 }
 
-.elegant-toc-section h2 {
-    margin-top: 0;
-    padding-bottom: 10px;
-    border-bottom: 1px solid #e5e7eb;
-}
-
-.elegant-toc-preview {
-    background: #fff;
-    border: 1px solid #ccd0d4;
-    border-radius: 4px;
-    padding: 20px;
-    margin-bottom: 20px;
-}
-
-.elegant-toc-preview h2 {
-    margin-top: 0;
-    padding-bottom: 10px;
-    border-bottom: 1px solid #e5e7eb;
-}
-
-.elegant-toc-preview .description {
-    margin-bottom: 16px;
-}
-
-.elegant-toc-preview-frame {
-    min-height: 300px;
-    padding: 24px;
-    background: #f9fafb;
-    border: 1px solid #e5e7eb;
-    border-radius: 6px;
-    overflow: auto;
-}
-
-.elegant-toc-preview-frame .elegant-toc-panel {
-    max-height: 340px;
-    overflow: hidden;
-}
-
-.elegant-toc-preview-frame .elegant-toc-list {
-    max-height: calc(100% - 5rem);
-    overflow-y: auto;
-}
-
-.elegant-toc-admin .form-table th {
-    width: 200px;
-}
-
-.elegant-toc-admin label {
-    display: inline-block;
-    margin: 5px 0;
-}
-
-/* ---------- 个性化配色选择器 ---------- */
-.elegant-toc-color-options {
+/* ---------- 顶部栏 ---------- */
+.et-admin-header {
     display: flex;
-    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+}
+
+.et-admin-header h1 {
+    font-size: 24px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0;
+    padding: 0;
+    line-height: 1.2;
+}
+
+.et-doc-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    color: #374151;
+    font-size: 13px;
+    font-weight: 500;
+    text-decoration: none;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    transition: all 0.2s ease;
+}
+
+.et-doc-link:hover {
+    background: #f9fafb;
+    border-color: #d1d5db;
+    color: #111827;
+    text-decoration: none;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+}
+
+.et-doc-link svg {
+    display: block;
+    width: 14px;
+    height: 14px;
+    opacity: 0.7;
+}
+
+/* ---------- 主体布局（侧边栏 + 内容区） ---------- */
+.et-admin-layout {
+    display: flex;
+    gap: 24px;
+    align-items: flex-start;
+}
+
+/* 左侧分区导航 */
+.et-admin-sidebar {
+    width: 190px;
+    flex-shrink: 0;
+    position: sticky;
+    top: 48px;
+}
+
+.et-nav-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.et-nav-item {
+    margin: 0;
+}
+
+.et-nav-btn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 10px 14px;
+    background: transparent;
+    border: none;
+    border-radius: 8px;
+    color: #4b5563;
+    font-size: 14px;
+    font-weight: 500;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    box-sizing: border-box;
+}
+
+.et-nav-btn:hover {
+    background: #f3f4f6;
+    color: #111827;
+}
+
+.et-nav-btn.is-active {
+    background: #eff6ff;
+    color: #2563eb;
+    font-weight: 600;
+}
+
+.et-nav-btn svg {
+    display: block;
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    opacity: 0.85;
+}
+
+.et-nav-btn.is-active svg {
+    opacity: 1;
+    color: #2563eb;
+}
+
+/* 右侧内容卡片列表 */
+.et-admin-main {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* ---------- 卡片容器 ---------- */
+.et-card {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02);
+    scroll-margin-top: 60px;
+    transition: box-shadow 0.2s ease;
+}
+
+.et-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.et-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.et-card-title-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.et-card-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 17px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0;
+}
+
+.et-card-title svg {
+    color: #4b5563;
+    opacity: 0.9;
+}
+
+.et-card-desc {
+    font-size: 13px;
+    color: #6b7280;
+    margin: 0;
+}
+
+/* ---------- 表单排版行 ---------- */
+.et-form-row {
+    display: grid;
+    grid-template-columns: 180px 1fr;
+    gap: 16px;
+    padding: 16px 0;
+    border-top: 1px solid #f3f4f6;
+    align-items: flex-start;
+}
+
+.et-card > .et-form-row:first-of-type {
+    border-top: none;
+    padding-top: 0;
+}
+
+.et-form-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #374151;
+    padding-top: 4px;
+    line-height: 1.4;
+}
+
+.et-form-field {
+    min-width: 0;
+}
+
+.et-field-desc {
+    font-size: 13px;
+    color: #6b7280;
+    margin: 6px 0 0 0;
+    line-height: 1.5;
+}
+
+.et-field-sublabel {
+    font-size: 12px;
+    color: #9ca3af;
+    margin: 0 0 8px 0;
+}
+
+/* ---------- iOS 风格切换开关 (Switch Toggle) ---------- */
+.et-switch-wrap {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.et-switch-input {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.et-switch-slider {
+    position: relative;
+    display: inline-block;
+    width: 44px;
+    height: 24px;
+    background-color: #e5e7eb;
+    border-radius: 24px;
+    transition: background-color 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    flex-shrink: 0;
+}
+
+.et-switch-slider::before {
+    content: '';
+    position: absolute;
+    left: 2px;
+    top: 2px;
+    width: 20px;
+    height: 20px;
+    background-color: #ffffff;
+    border-radius: 50%;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15), 0 1px 2px rgba(0, 0, 0, 0.06);
+    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.et-switch-input:checked + .et-switch-slider {
+    background-color: #2563eb;
+}
+
+.et-switch-input:checked + .et-switch-slider::before {
+    transform: translateX(20px);
+}
+
+.et-switch-input:focus-visible + .et-switch-slider {
+    outline: 2px solid #2563eb;
+    outline-offset: 2px;
+}
+
+.et-switch-text {
+    font-size: 14px;
+    color: #374151;
+    font-weight: 500;
+}
+
+/* ---------- 复选框组 (Post Types) ---------- */
+.et-checkbox-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.et-checkbox-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    color: #374151;
+    cursor: pointer;
+    margin: 0 !important;
+}
+
+/* 禁用 WordPress 核心 forms.css 强加在 checkbox 上的 ::before 图标，防止双重对勾重叠 */
+.wrap.elegant-toc-admin input[type="checkbox"]::before,
+.wrap.elegant-toc-admin input[type="checkbox"]::after {
+    content: none !important;
+    display: none !important;
+}
+
+.et-checkbox-label input[type="checkbox"] {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 18px;
+    height: 18px;
+    border: 1.5px solid #d1d5db;
+    border-radius: 4px;
+    outline: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #ffffff;
+    margin: 0;
+    transition: all 0.15s ease;
+    vertical-align: middle;
+    flex-shrink: 0;
+}
+
+.et-checkbox-label input[type="checkbox"]:checked {
+    background-color: #2563eb;
+    border-color: #2563eb;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 11px 11px;
+}
+
+.et-checkbox-label input[type="checkbox"]:focus-visible {
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.25);
+}
+
+.et-post-type-slug {
+    color: #9ca3af;
+    font-size: 13px;
+    margin-left: 2px;
+}
+
+/* ---------- 提示气泡框 (Tip Box) ---------- */
+.et-tip-box {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    background: #eff6ff;
+    border: 1px solid #dbeafe;
+    border-radius: 8px;
+    color: #1e40af;
+    font-size: 13px;
+    margin-top: 12px;
+    line-height: 1.4;
+}
+
+.et-tip-box svg {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+    color: #2563eb;
+}
+
+/* ---------- 现代输入框 ---------- */
+.et-input {
+    height: 38px;
+    padding: 6px 12px;
+    background: #ffffff;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    color: #111827;
+    font-size: 14px;
+    box-sizing: border-box;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.et-input:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+    outline: none;
+}
+
+.et-input-number {
+    width: 100px;
+    text-align: center;
+}
+
+.et-input-group {
+    display: inline-flex;
+    align-items: center;
+    position: relative;
+}
+
+.et-input-group .et-input {
+    padding-right: 38px;
+    width: 190px;
+}
+
+.et-input-addon {
+    position: absolute;
+    right: 12px;
+    color: #6b7280;
+    font-size: 13px;
+    pointer-events: none;
+    font-weight: 500;
+}
+
+/* ---------- 标题层级水平卡片行 ---------- */
+.et-card--compact .et-card-header {
+    margin-bottom: 0;
+}
+
+.et-headings-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.et-heading-pills {
+    display: flex;
+    align-items: center;
     gap: 14px;
+    flex-wrap: wrap;
+}
+
+.et-heading-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #374151;
+    cursor: pointer;
+    margin: 0 !important;
+}
+
+.et-heading-pill input[type="checkbox"] {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 18px;
+    height: 18px;
+    border: 1.5px solid #d1d5db;
+    border-radius: 4px;
+    outline: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #ffffff;
+    margin: 0;
+    transition: all 0.15s ease;
+    vertical-align: middle;
+    flex-shrink: 0;
+}
+
+.et-heading-pill input[type="checkbox"]:checked {
+    background-color: #2563eb;
+    border-color: #2563eb;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 11px 11px;
+}
+
+/* ---------- 外观色彩卡片选择器 ---------- */
+.elegant-toc-color-options {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(115px, 1fr));
+    gap: 12px;
+    margin-top: 14px;
 }
 
 .elegant-toc-color-option {
@@ -77,28 +491,24 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    width: 116px;
-    height: 68px;
-    padding: 8px;
-    margin: 0;
-    border: 2px solid rgba(0, 0, 0, 0.08);
+    height: 64px;
+    padding: 8px 10px;
+    border: 2px solid transparent;
     border-radius: 10px;
-    background: #e5e7eb;
     cursor: pointer;
     overflow: hidden;
     transition: transform 0.15s ease, box-shadow 0.2s ease, border-color 0.2s ease;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
 .elegant-toc-color-option:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
-    border-color: rgba(124, 58, 237, 0.35);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
 }
 
 .elegant-toc-color-option.is-checked {
-    border-color: #7c3aed;
-    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.15), 0 6px 16px rgba(0, 0, 0, 0.1);
+    border-color: #2563eb !important;
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.25), 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
 .elegant-toc-color-option input[type="radio"] {
@@ -107,21 +517,171 @@
     pointer-events: none;
 }
 
-.elegant-toc-color-swatch {
-    display: none;
-}
-
 .elegant-toc-color-label {
-    position: relative;
-    z-index: 1;
     font-size: 13px;
     font-weight: 600;
     text-align: center;
-    line-height: 1.3;
     user-select: none;
-    text-shadow: 0 1px 2px rgba(255, 255, 255, 0.35);
+    z-index: 1;
 }
 
-.elegant-toc-color-option[data-theme="dark"] .elegant-toc-color-label {
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+/* 选中对勾徽章 */
+.et-check-badge {
+    position: absolute;
+    right: 6px;
+    top: 6px;
+    width: 18px;
+    height: 18px;
+    background: #2563eb;
+    color: #ffffff;
+    border-radius: 50%;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
+}
+
+.et-check-badge svg {
+    width: 12px;
+    height: 12px;
+}
+
+.elegant-toc-color-option.is-checked .et-check-badge {
+    display: flex;
+}
+
+/* ---------- 预览效果框 ---------- */
+.elegant-toc-preview-frame {
+    min-height: 220px;
+    padding: 24px;
+    background: #f8fafc;
+    border: 1px dashed #cbd5e1;
+    border-radius: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+}
+
+.elegant-toc-preview-frame .elegant-toc-panel {
+    max-height: 320px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+}
+
+/* ---------- 底部固定/吸底操作栏 (Action Bar) ---------- */
+.et-bottom-bar {
+    position: sticky;
+    bottom: 20px;
+    z-index: 99;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 24px;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    margin-top: 10px;
+}
+
+.et-bottom-left {
+    display: flex;
+    align-items: center;
+}
+
+.et-bottom-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+/* 按钮样式 */
+.et-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    height: 38px;
+    padding: 0 18px;
+    font-size: 14px;
+    font-weight: 500;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+    text-decoration: none;
+    box-sizing: border-box;
+}
+
+.et-btn-ghost {
+    background: transparent;
+    color: #4b5563;
+    border-color: transparent;
+}
+
+.et-btn-ghost:hover {
+    background: #f3f4f6;
+    color: #111827;
+}
+
+.et-btn-ghost svg {
+    width: 15px;
+    height: 15px;
+    opacity: 0.8;
+}
+
+.et-btn-secondary {
+    background: #ffffff;
+    color: #374151;
+    border-color: #d1d5db;
+}
+
+.et-btn-secondary:hover {
+    background: #f9fafb;
+    border-color: #9ca3af;
+    color: #111827;
+}
+
+.et-btn-primary {
+    background: #2563eb;
+    color: #ffffff;
+    font-weight: 600;
+    box-shadow: 0 1px 3px rgba(37, 99, 235, 0.3);
+}
+
+.et-btn-primary:hover {
+    background: #1d4ed8;
+    box-shadow: 0 2px 6px rgba(37, 99, 235, 0.4);
+}
+
+.et-btn-primary:active {
+    transform: translateY(1px);
+}
+
+/* ---------- 响应式适配 ---------- */
+@media (max-width: 782px) {
+    .et-admin-layout {
+        flex-direction: column;
+    }
+    .et-admin-sidebar {
+        width: 100%;
+        position: static;
+    }
+    .et-nav-list {
+        flex-direction: row;
+        overflow-x: auto;
+        padding-bottom: 6px;
+    }
+    .et-nav-btn {
+        white-space: nowrap;
+    }
+    .et-form-row {
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
+    .et-headings-row {
+        flex-direction: column;
+        align-items: flex-start;
+    }
 }

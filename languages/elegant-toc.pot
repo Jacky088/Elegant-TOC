@@ -88,6 +88,18 @@ msgstr ""
 msgid "当文章标题数量少于此值时，不显示目录"
 msgstr ""
 
+#: admin/settings-page.php
+msgid "顶部偏移量 (Offset)"
+msgstr ""
+
+#: admin/settings-page.php
+msgid "自动探测（默认）"
+msgstr ""
+
+#: admin/settings-page.php
+msgid "若网站有顶部吸顶固定导航栏（Fixed Header），可填入吸顶栏高度或期望留白（推荐 80 ~ 120px）。留空或填 0 则由插件自动探测。"
+msgstr ""
+
 #. 设置页：标题层级
 #: admin/settings-page.php
 msgid "标题层级"
@@ -172,5 +184,41 @@ msgid "这是目录的外观预览，选择配色后可实时查看效果"
 msgstr ""
 
 #: admin/settings-page.php
+msgid "查看文档"
+msgstr ""
+
+#: admin/settings-page.php
+msgid "控制目录的显示范围和触发条件"
+msgstr ""
+
+#: admin/settings-page.php
+msgid "外观样式"
+msgstr ""
+
+#: admin/settings-page.php
+msgid "通常建议勾选 “文章” 和 “页面”"
+msgstr ""
+
+#: admin/settings-page.php
+msgid "浅灰 (默认)"
+msgstr ""
+
+#: admin/settings-page.php
+msgid "实时预览目录在页面中的显示效果"
+msgstr ""
+
+#: admin/settings-page.php
+msgid "恢复默认设置"
+msgstr ""
+
+#: admin/settings-page.php
+msgid "取消"
+msgstr ""
+
+#: admin/settings-page.php
 msgid "保存设置"
+msgstr ""
+
+#: admin/settings-page.php
+msgid "确定要将所有设置恢复为默认值吗？点击保存后生效。"
 msgstr ""
